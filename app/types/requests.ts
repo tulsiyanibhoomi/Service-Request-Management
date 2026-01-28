@@ -1,0 +1,25 @@
+export type ServiceRequest = {
+    service_request_id: number;
+    no: string;
+    datetime?: Date;
+    type_id: number;
+    type: string;
+    dept_id: number;
+    department: string;
+    title: string;
+    description: string;
+    status: string;
+    status_update_datetime?: Date;
+    status_update_by_user?: number;
+    assigned_to?: number;
+    assigned_datetime?: Date;
+    assigned_by?: number;
+    assigned_description?: string;
+    userid: number;
+    username: string;
+    userfullname: string;
+    created_at: Date;
+    modified_at: Date;
+    priority?: string;
+    attachments?: string[];
+};
