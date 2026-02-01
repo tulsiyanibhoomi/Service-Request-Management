@@ -104,6 +104,7 @@ model service_request {
   attachment_path3                                               String?                 @db.VarChar(250)
   attachment_path4                                               String?                 @db.VarChar(250)
   attachment_path5                                               String?                 @db.VarChar(250)
+  last_comment                                                   String?                 @db.Text
   users_service_request_assigned_by_user_idTousers               users?                  @relation("service_request_assigned_by_user_idTousers", fields: [assigned_by_user_id], references: [userid], onDelete: NoAction, onUpdate: NoAction, map: "fk_assigned_by_user")
   users_service_request_assigned_to_user_idTousers               users?                  @relation("service_request_assigned_to_user_idTousers", fields: [assigned_to_user_id], references: [userid], onDelete: NoAction, onUpdate: NoAction, map: "fk_assigned_to_user")
   users_service_request_service_request_status_by_user_idTousers users?                  @relation("service_request_service_request_status_by_user_idTousers", fields: [service_request_status_by_user_id], references: [userid], map: "fk_status_by_user")

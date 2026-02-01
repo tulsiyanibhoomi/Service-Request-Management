@@ -11,6 +11,7 @@ export type ServiceRequest = {
     status: string;
     status_update_datetime?: Date;
     status_update_by_user?: number;
+    assigned_to_userid?: number;
     assigned_to?: number;
     assigned_datetime?: Date;
     assigned_by?: number;

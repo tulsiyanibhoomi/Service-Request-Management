@@ -9,15 +9,21 @@ export default function HODRequestDetailsPage() {
     const { id } = useParams();
     const [data, setData] = useState<ServiceRequest | null>(null);
     const [loading, setLoading] = useState(true);
+    const [role, setRole] = useState<"Employee" | "HOD" | "Admin">("Employee");
 
     useEffect(() => {
         if (!id) return;
 
         const fetchData = async () => {
             try {
-                const res = await fetch(`/api/hod/requests/${id}`);
-                const json = await res.json();
-                setData(json);
+                fetch(`/api/hod/requests/${id}`)
+                    .then(res => res.json())
+                    .then(data => setData(data));
+
+                fetch("/api/auth/current-user")
+                    .then(res => res.json())
+                    .then(data => setRole(data.user.role));
+
             } catch (err) {
                 console.error(err);
             } finally {
@@ -30,5 +36,9 @@ export default function HODRequestDetailsPage() {
     if (loading) return <p className="text-center mt-10">Loading...</p>;
     if (!data) return <p className="text-center mt-10">Request not found</p>;
 
-    return <RequestDetails data={data} backLink="/hod/requests" />;
+    return <RequestDetails
+        data={data}
+        backLink="/hod/requests"
+        role={role}
+    />;
 }

@@ -31,7 +31,7 @@ export async function GET() {
         });
 
         const data = technicianUsers.map(tu => ({
-            userid: tu.userid,
+            id: tu.userid,
             name: tu.users.fullname,
         }));
 

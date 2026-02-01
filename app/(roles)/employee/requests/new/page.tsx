@@ -28,19 +28,24 @@ const NewRequest = () => {
 
     useEffect(() => {
         async function fetchFormData() {
-            const res = await fetch('/api/current-user');
-            const user: User = await res.json();
+            const res = await fetch('/api/auth/current-user');
+            const { user } = await res.json();
 
             const overviewRes = await fetch("/api/employee/overview");
             const overviewData: EmployeeOverview = await overviewRes.json();
 
             const requestNumber = overviewData.total + 1;
-            const serviceRequestNo = `${user.initials.toUpperCase()}-${String(requestNumber).padStart(4, '0')}`;
 
-            fetch("/api/request-types/type-names")
-                .then((res) => res.json())
-                .then((data) => setRequestTypes(data))
-                .catch((err) => console.error(err));
+            const initials = user.fullname
+                .split(' ')
+                .map((n: any[]) => n[0])
+                .join('');
+
+            const serviceRequestNo = `${initials.toUpperCase()}-${String(requestNumber).padStart(4, '0')}`;
+
+            const typeRes = await fetch("/api/request-types/type-names");
+            const data = await typeRes.json();
+            setRequestTypes(data);
 
             setFormData(prev => ({
                 ...prev,

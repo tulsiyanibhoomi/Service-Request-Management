@@ -5,14 +5,20 @@ import Link from "next/link";
 import LightboxModal from "@/app/components/ui/attachmentsmodal";
 import { ServiceRequest } from "@/app/types/requests";
 import { formatDate } from "@/app/components/ui/table";
+import DecisionModal from "./requestdecisionmodal";
 
 interface RequestDetailsProps {
     data: ServiceRequest;
     backLink?: string;
+    role?: "Employee" | "HOD" | "Admin";
 }
 
-export default function RequestDetails({ data, backLink = "/requests" }: RequestDetailsProps) {
+export default function RequestDetails({ data, backLink = "/requests", role }: RequestDetailsProps) {
     const [lightboxIndex, setLightboxIndex] = useState<number | null>(null);
+    const canDecide = role === "HOD" || role === "Admin";
+    const [modalOpen, setModalOpen] = useState(false);
+    const [modalAction, setModalAction] = useState<"Approve" | "Decline" | "Close" | "Reassign">("Approve");
+    const canPostDecision = canDecide && data.status !== "Pending";
 
     const statusGradient = (status: string) => {
         switch (status.toLowerCase()) {
@@ -33,6 +39,26 @@ export default function RequestDetails({ data, backLink = "/requests" }: Request
         }
     };
 
+    const handleApprove = async () => {
+        setModalAction("Approve");
+        setModalOpen(true);
+    };
+
+    const handleDecline = async () => {
+        setModalAction("Decline");
+        setModalOpen(true);
+    };
+
+    const handleClose = async () => {
+        setModalAction("Close");
+        setModalOpen(true);
+    };
+
+    const handleReassign = async () => {
+        setModalAction("Reassign");
+        setModalOpen(true);
+    };
+
     return (
         <div className="min-h-screen bg-gray-50 p-6">
             <div className="rounded-3xl p-6 bg-gradient-to-r from-purple-600 to-indigo-600 mb-8 shadow-lg flex justify-between items-center">
@@ -47,7 +73,6 @@ export default function RequestDetails({ data, backLink = "/requests" }: Request
 
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
                 <div className="lg:col-span-2 space-y-6">
-                    {/* Request Info */}
                     <div className="bg-white rounded-2xl shadow-lg p-6 hover:shadow-xl transition">
                         <h2 className="text-2xl font-semibold mb-4 text-gray-800">Request Information</h2>
                         <div className="space-y-4 text-gray-700">
@@ -61,7 +86,6 @@ export default function RequestDetails({ data, backLink = "/requests" }: Request
                         </div>
                     </div>
 
-                    {/* Attachments */}
                     {data.attachments && data.attachments.length > 0 && (
                         <div className="bg-white rounded-2xl shadow-lg p-6 hover:shadow-xl transition">
                             <h2 className="text-2xl font-semibold mb-4 text-gray-800">Attachments</h2>
@@ -116,6 +140,61 @@ export default function RequestDetails({ data, backLink = "/requests" }: Request
                         </div>
                     </div>
 
+                    {canDecide && data.status === "Pending" && (
+                        <div className="bg-white rounded-2xl shadow-lg p-6 hover:shadow-xl transition">
+                            <h2 className="text-2xl font-semibold mb-4 text-gray-800">Decision</h2>
+                            <div className="flex gap-4">
+                                <button
+                                    className="bg-green-600 cursor-pointer text-white px-5 py-2 rounded-lg hover:bg-green-700 transition"
+                                    onClick={handleApprove}
+                                >
+                                    Approve
+                                </button>
+
+                                <button
+                                    className="bg-red-600 cursor-pointer text-white px-5 py-2 rounded-lg hover:bg-red-700 transition"
+                                    onClick={handleDecline}
+                                >
+                                    Decline
+                                </button>
+                            </div>
+                        </div>
+                    )}
+
+                    {canPostDecision && (
+                        <div className="bg-white rounded-2xl shadow-lg p-6 hover:shadow-xl transition">
+                            <h2 className="text-2xl font-semibold mb-4 text-gray-800">Actions</h2>
+                            {data.status === "Closed" ? (
+                                <p className="text-sm text-gray-500">This request is already closed.</p>
+                            ) : data.status === "Declined" ? (
+                                <p className="text-sm text-gray-500">This request has been declined.</p>
+                            ) : (
+                                <div className="flex flex-col gap-4">
+                                    <button
+                                        className="bg-red-600 text-white px-5 py-2 rounded-lg hover:bg-red-700 transition"
+                                        onClick={handleDecline}
+                                    >
+                                        Decline Request
+                                    </button>
+
+                                    <button
+                                        className="bg-gray-600 text-white px-5 py-2 rounded-lg hover:bg-gray-700 transition"
+                                        onClick={handleClose}
+                                    >
+                                        Close Request
+                                    </button>
+
+                                    <button
+                                        className="bg-indigo-600 text-white px-5 py-2 rounded-lg hover:bg-indigo-700 transition"
+                                        onClick={handleReassign}
+                                    >
+                                        Reassign Request
+                                    </button>
+                                </div>
+                            )}
+                        </div>
+                    )}
+
                     <div className="bg-white rounded-2xl shadow-lg p-6 hover:shadow-xl transition">
                         <h2 className="text-2xl font-semibold mb-4 text-gray-800">Assignment</h2>
                         <div className="border-l-2 border-indigo-400 pl-4 space-y-4">
@@ -147,6 +226,15 @@ export default function RequestDetails({ data, backLink = "/requests" }: Request
                     </div>
                 </div>
             </div>
+
+            {modalOpen && (
+                <DecisionModal
+                    request={data}
+                    action={modalAction}
+                    onClose={() => setModalOpen(false)}
+                />
+            )}
+
         </div>
     );
 }

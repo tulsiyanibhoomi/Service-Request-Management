@@ -4,29 +4,29 @@ import { prisma } from "@/app/lib/prisma";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 
-interface DeclineRequestInput {
+interface CloseRequestInput {
     requestId: number;
     hodId: number;
     comment?: string;
 }
 
-export async function declineServiceRequest({
+export async function closeServiceRequest({
     requestId,
     hodId,
     comment,
-}: DeclineRequestInput) {
+}: CloseRequestInput) {
     try {
         if (!requestId) throw new Error("Request ID is required");
         if (!comment || comment.trim() === "") {
-            throw new Error("Comment is required to decline the request");
+            throw new Error("Comment is required to close the request");
         }
 
         const closedStatus = await prisma.service_request_status.findFirst({
-            where: { service_request_status_name: "Declined" },
+            where: { service_request_status_name: "Closed" },
         });
 
         if (!closedStatus) {
-            throw new Error('"Declined" status not found in database');
+            throw new Error('"Closed" status not found in database');
         }
 
         await prisma.service_request.update({
@@ -42,7 +42,7 @@ export async function declineServiceRequest({
 
         revalidatePath("/hod/requests");
     } catch (error) {
-        console.error("Error declining request:", error);
+        console.error("Error closing request:", error);
     }
     redirect("/hod/requests");
 }

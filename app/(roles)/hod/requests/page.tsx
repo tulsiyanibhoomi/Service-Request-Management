@@ -21,7 +21,7 @@ export default function HODRequests() {
         <div className="overflow-x-auto">
           <Table
             data={requests}
-            columns={['no', 'title', 'type', 'priority', 'status', 'created_at']}
+            columns={['no', 'title', 'type', 'priority', 'status', 'assigned_to']}
             rowKey='service_request_id'
             rowClickRoute={(row) => `/hod/requests/${row.service_request_id}`}
             onDelete={deleteRequest}

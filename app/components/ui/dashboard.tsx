@@ -35,7 +35,7 @@ export default function CommonDashboard<T>({
     ];
 
     const [user, setUser] = useState(null);
-    const [redirectURL, setRedirectURL] = useState("/requests"); // default fallback
+    const [redirectURL, setRedirectURL] = useState("/requests");
 
     useEffect(() => {
         fetch("/api/auth/current-user")
@@ -84,6 +84,7 @@ export default function CommonDashboard<T>({
                         columns={tableColumns}
                         rowKey={tableRowKey as string}
                         rowActions={tableRowActions}
+                        rowClickRoute={(row) => `${redirectURL}/${row.service_request_id}`}
                     />
                 </div>
             </div>

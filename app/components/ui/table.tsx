@@ -55,11 +55,8 @@ export default function Table({ data, columns, onEdit, onDelete, rowKey, rowClic
         : tableData.length > 0
             ? Object.keys(tableData[0]).filter(col => {
                 const lowerCol = col.toLowerCase();
-
                 if (HIDDEN_COLUMNS.includes(lowerCol)) return false;
-
                 if (rowKey !== "userid" && (lowerCol === "userid" || lowerCol === "users")) return false;
-
                 return true;
             })
             : [];
@@ -85,6 +82,11 @@ export default function Table({ data, columns, onEdit, onDelete, rowKey, rowClic
             setSelectedData(null);
         }
     };
+
+    function formatValue(value: any) {
+        if (value === undefined || value === null) return "-";
+        return String(value);
+    }
 
     return (
         <>
@@ -125,15 +127,6 @@ export default function Table({ data, columns, onEdit, onDelete, rowKey, rowClic
                             >
                                 {columnsToRender.map((col, i) => {
                                     const value = row[col];
-                                    if (col.toLowerCase() === "is_request_title_disable") {
-                                        return (
-                                            <td key={i} className="px-6 py-4 whitespace-nowrap text-sm">
-                                                <span className={`px-3 py-1 rounded-full text-white text-xs font-semibold ${value ? "bg-red-500" : "bg-green-500"}`}>
-                                                    {value ? "Disabled" : "Enabled"}
-                                                </span>
-                                            </td>
-                                        );
-                                    }
                                     if (col.toLowerCase() === "roles" && value) {
                                         return (
                                             <td key={i} className="px-6 py-4 whitespace-nowrap text-sm">
@@ -147,22 +140,24 @@ export default function Table({ data, columns, onEdit, onDelete, rowKey, rowClic
                                                                 : "bg-gray-300 text-gray-800"
                                                         }`}
                                                 >
-                                                    {value}
+                                                    {formatValue(value)}
                                                 </span>
                                             </td>
                                         );
                                     }
                                     if (col.toLowerCase() === "status") {
                                         let bgColor = "bg-gray-100 text-gray-800 border border-gray-300";
+
                                         if (value?.toLowerCase() === "pending") bgColor = "bg-yellow-100 text-yellow-800 border-yellow-400";
                                         else if (value?.toLowerCase() === "in progress") bgColor = "bg-blue-100 text-blue-800 border-blue-400";
                                         else if (value?.toLowerCase() === "completed") bgColor = "bg-green-100 text-green-800 border-green-400";
                                         else if (value?.toLowerCase() === "closed") bgColor = "bg-gray-200 text-gray-700 border-gray-400";
+                                        else if (value?.toLowerCase() === "declined") bgColor = "bg-red-100 text-red-800 border-red-400";
 
                                         return (
                                             <td key={i} className="px-3 py-2 whitespace-nowrap text-sm">
                                                 <span className={`px-3 py-1 rounded-full font-semibold border ${bgColor}`}>
-                                                    {value}
+                                                    {formatValue(value)}
                                                 </span>
                                             </td>
                                         );
@@ -176,7 +171,7 @@ export default function Table({ data, columns, onEdit, onDelete, rowKey, rowClic
                                         return (
                                             <td key={i} className="px-6 py-4 whitespace-nowrap text-sm">
                                                 <span className={`px-3 py-1 rounded-full font-semibold ${bgColor}`}>
-                                                    {value}
+                                                    {formatValue(value)}
                                                 </span>
                                             </td>
                                         );
@@ -191,7 +186,7 @@ export default function Table({ data, columns, onEdit, onDelete, rowKey, rowClic
 
                                     return (
                                         <td key={i} className="px-6 py-4 whitespace-nowrap text-sm text-gray-700">
-                                            {String(value)}
+                                            {formatValue(value)}
                                         </td>
                                     );
                                 })}

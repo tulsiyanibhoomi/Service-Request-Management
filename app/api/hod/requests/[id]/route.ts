@@ -24,17 +24,21 @@ export async function GET(req: Request, context: { params: { id: string } }) {
                 },
                 users_service_request_service_request_status_by_user_idTousers: {
                     select: {
-                        username: true
+                        username: true,
+                        fullname: true
                     }
                 },
                 users_service_request_assigned_to_user_idTousers: {
                     select: {
-                        username: true
+                        userid: true,
+                        username: true,
+                        fullname: true
                     }
                 },
                 users_service_request_assigned_by_user_idTousers: {
                     select: {
-                        username: true
+                        username: true,
+                        fullname: true
                     }
                 },
                 service_request_type: {
@@ -72,14 +76,15 @@ export async function GET(req: Request, context: { params: { id: string } }) {
             department: req.service_request_type?.service_dept.service_dept_name ?? "N/A",
             priority: req.priority_level,
             status: req.service_request_status?.service_request_status_name ?? "N/A",
-            status_update_by_user: req.users_service_request_service_request_status_by_user_idTousers?.username ?? "N/A",
+            status_update_by_user: req.users_service_request_service_request_status_by_user_idTousers?.fullname ?? "N/A",
             status_update_datetime: req.service_request_status_datetime,
             datetime: req.service_request_datetime,
             attachments,
             username: req.users.username,
             userfullname: req.users.fullname,
-            assigned_to: req.users_service_request_assigned_to_user_idTousers,
-            assigned_by: req.users_service_request_assigned_by_user_idTousers,
+            assigned_to_userid: req.users_service_request_assigned_to_user_idTousers?.userid ?? 0,
+            assigned_to: req.users_service_request_assigned_to_user_idTousers?.fullname ?? "N/A",
+            assigned_by: req.users_service_request_assigned_by_user_idTousers?.fullname ?? "N/A",
             assigned_datetime: req.assigned_datetime,
             assigned_description: req.assigned_description,
             created_at: req.created,

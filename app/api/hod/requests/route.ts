@@ -32,8 +32,6 @@ export async function GET() {
                 service_request_no: true,
                 service_request_title: true,
                 priority_level: true,
-                service_request_datetime: true,
-                created: true,
                 service_request_status: {
                     select: {
                         service_request_status_name: true,
@@ -44,6 +42,11 @@ export async function GET() {
                         service_type_name: true,
                     },
                 },
+                users_service_request_assigned_to_user_idTousers: {
+                    select: {
+                        fullname: true,
+                    },
+                }
             },
         });
 
@@ -54,8 +57,7 @@ export async function GET() {
             type: req.service_request_type.service_type_name,
             priority: req.priority_level,
             status: req.service_request_status.service_request_status_name,
-            datetime: req.service_request_datetime,
-            created_at: req.created,
+            assigned_to: req.users_service_request_assigned_to_user_idTousers?.fullname
         }));
 
         return NextResponse.json(formatted);
