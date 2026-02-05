@@ -1,6 +1,7 @@
 export type Overview = {
     total: number;
     pending: number;
+    approved: number;
     in_progress: number;
     completed: number;
 };

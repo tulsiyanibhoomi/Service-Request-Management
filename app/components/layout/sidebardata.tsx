@@ -57,6 +57,11 @@ export const menuItemsByRole: Record<string, MenuItem[]> = {
     { name: "Requests", path: "/hod/requests", icon: <FiFolder /> },
   ],
 
+  Technician: [
+    { name: "Dashboard", path: "/technician/dashboard", icon: <FiHome /> },
+    { name: "Requests", path: "/technician/requests", icon: <FiFolder /> },
+  ],
+
   Employee: [
     { name: "Dashboard", path: "/employee/dashboard", icon: <FiHome /> },
     { name: "Requests", path: "/employee/requests", icon: <FiDatabase /> },

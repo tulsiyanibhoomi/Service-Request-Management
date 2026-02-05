@@ -99,7 +99,7 @@ export async function GET(req: Request, context: { params: { id: string } }) {
 
         return NextResponse.json(formatted);
     } catch (err) {
-        console.error("HOD Requests API error:", err);
+        console.error("Technician Requests API error:", err);
         return NextResponse.json(
             { message: "Failed to load employee requests" },
             { status: 500 }

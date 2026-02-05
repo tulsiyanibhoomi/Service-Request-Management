@@ -8,6 +8,7 @@ export default function HodDashboardPage() {
     const [overview, setOverview] = useState<Overview>({
         total: 0,
         pending: 0,
+        approved: 0,
         in_progress: 0,
         completed: 0,
     });
@@ -30,27 +31,6 @@ export default function HodDashboardPage() {
             .then(data => setUserName(data.user.fullname || "User"));
     }, []);
 
-    const acceptRequest = async (row: RecentRequest) => {
-        const id = row.service_request_id;
-        const technicianId = selectedTech[id];
-        if (!technicianId) {
-            alert("Please select a technician");
-            return;
-        }
-        await fetch(`/api/hod/requests/${id}/accept`, {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ technicianId }),
-        });
-        setRequests(prev => prev.filter(r => r.service_request_id !== id));
-    };
-
-    const declineRequest = async (row: RecentRequest) => {
-        const id = row.service_request_id;
-        await fetch(`/api/hod/requests/${id}/reject`, { method: "POST" });
-        setRequests(prev => prev.filter(r => r.service_request_id !== id));
-    };
-
     return (
         <CommonDashboard<RecentRequest>
             title={
@@ -62,33 +42,31 @@ export default function HodDashboardPage() {
             tableData={requests}
             tableColumns={["no", "title", "type", "priority", "status"]}
             tableRowKey="service_request_id"
-            tableRowActions={[
-                {
-                    name: "Actions",
-                    render: (row: any) => (
-                        <div className="flex gap-2">
-                            <button
-                                className="bg-green-600 text-white px-3 py-1 rounded hover:bg-green-700 transition"
-                                onClick={e => {
-                                    e.stopPropagation();
-                                    acceptRequest(row);
-                                }}
-                            >
-                                Accept
-                            </button>
-                            <button
-                                className="bg-red-600 text-white px-3 py-1 rounded hover:bg-red-700 transition"
-                                onClick={e => {
-                                    e.stopPropagation();
-                                    declineRequest(row);
-                                }}
-                            >
-                                Decline
-                            </button>
-                        </div>
-                    ),
-                },
-            ]}
+        // tableRowActions={[
+        //     {
+        //         name: "Actions",
+        //         render: (row: any) => (
+        //             <div className="flex gap-2">
+        //                 <button
+        //                     className="bg-green-600 text-white px-3 py-1 rounded hover:bg-green-700 transition"
+        //                     onClick={e => {
+        //                         e.stopPropagation();
+        //                     }}
+        //                 >
+        //                     Accept
+        //                 </button>
+        //                 <button
+        //                     className="bg-red-600 text-white px-3 py-1 rounded hover:bg-red-700 transition"
+        //                     onClick={e => {
+        //                         e.stopPropagation();
+        //                     }}
+        //                 >
+        //                     Decline
+        //                 </button>
+        //             </div>
+        //         ),
+        //     },
+        // ]}
         />
     );
 }

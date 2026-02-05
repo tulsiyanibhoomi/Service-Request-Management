@@ -6,6 +6,7 @@ import { formatDate } from "./table";
 import { approveServiceRequest } from "@/app/actions/requests/approveRequest";
 import { closeServiceRequest } from "@/app/actions/requests/closeRequest";
 import { declineServiceRequest } from "@/app/actions/requests/declineRequest";
+import { TechnicianSelect } from "./technicianselect";
 
 interface DecisionModalProps {
     request: ServiceRequest;
@@ -16,6 +17,8 @@ interface DecisionModalProps {
 interface Technician {
     id: number;
     name: string;
+    status: "available" | "busy" | "on_leave";
+    selectable: boolean;
 }
 
 type ActionHandler = (payload: any) => Promise<void>;
@@ -34,7 +37,7 @@ export default function DecisionModal({
 }: DecisionModalProps) {
     const [comment, setComment] = useState<string>("");
     const [technicians, setTechnicians] = useState<Technician[]>([]);
-    const [technicianId, setTechnicianId] = useState<number | undefined>();
+    const [technicianId, setTechnicianId] = useState<number | null>();
     const [loadingTechs, setLoadingTechs] = useState(false);
     const [techError, setTechError] = useState<string | null>(null);
     const [userId, setUserId] = useState<number | null>(null);
@@ -177,22 +180,14 @@ export default function DecisionModal({
                             <p className="text-sm text-red-600">{techError}</p>
                         )}
 
-                        <select
-                            className="w-full border rounded-lg p-2"
-                            value={technicianId ?? ""}
-                            onChange={(e) => {
-                                setTechnicianId(Number(e.target.value));
+                        <TechnicianSelect
+                            technicians={availableTechnicians}
+                            value={technicianId ?? null}
+                            onChange={(id) => {
+                                setTechnicianId(id);
                                 setFormError(null);
                             }}
-                        >
-                            <option value="">Select technician</option>
-
-                            {availableTechnicians.map((tech) => (
-                                <option key={tech.id} value={tech.id}>
-                                    {tech.name}
-                                </option>
-                            ))}
-                        </select>
+                        />
                     </div>
                 )}
 

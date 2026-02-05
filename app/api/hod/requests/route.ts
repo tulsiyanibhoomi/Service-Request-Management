@@ -42,11 +42,18 @@ export async function GET() {
                         service_type_name: true,
                     },
                 },
-                users_service_request_assigned_to_user_idTousers: {
+                technician: {
                     select: {
-                        fullname: true,
-                    },
-                }
+                        technician_id: true,
+                        users: {
+                            select: {
+                                userid: true,
+                                username: true,
+                                fullname: true
+                            }
+                        }
+                    }
+                },
             },
         });
 
@@ -57,7 +64,10 @@ export async function GET() {
             type: req.service_request_type.service_type_name,
             priority: req.priority_level,
             status: req.service_request_status.service_request_status_name,
-            assigned_to: req.users_service_request_assigned_to_user_idTousers?.fullname
+            assigned_to:
+                req.service_request_status.service_request_status_name === "In Progress"
+                    ? req.technician?.users.fullname ?? "-"
+                    : "-",
         }));
 
         return NextResponse.json(formatted);

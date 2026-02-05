@@ -10,7 +10,7 @@ import DecisionModal from "./requestdecisionmodal";
 interface RequestDetailsProps {
     data: ServiceRequest;
     backLink?: string;
-    role?: "Employee" | "HOD" | "Admin";
+    role?: "Employee" | "HOD" | "Admin" | "Technician";
 }
 
 export default function RequestDetails({ data, backLink = "/requests", role }: RequestDetailsProps) {
@@ -56,6 +56,11 @@ export default function RequestDetails({ data, backLink = "/requests", role }: R
 
     const handleReassign = async () => {
         setModalAction("Reassign");
+        setModalOpen(true);
+    };
+
+    const handleStatusUpdate = async (status: string) => {
+        // setModalAction(status as "In Progress" | "Completed"); // Type adjustment
         setModalOpen(true);
     };
 
@@ -195,12 +200,32 @@ export default function RequestDetails({ data, backLink = "/requests", role }: R
                         </div>
                     )}
 
+                    {role === "Technician" && data.status !== "Closed" && (
+                        <div className="bg-white rounded-2xl shadow-lg p-6 hover:shadow-xl transition">
+                            <h2 className="text-2xl font-semibold mb-4 text-gray-800">Update Status</h2>
+                            <div className="flex gap-4">
+                                <button
+                                    className="bg-yellow-600 text-white px-5 py-2 rounded-lg hover:bg-yellow-700 transition"
+                                    onClick={() => handleStatusUpdate("In Progress")}
+                                >
+                                    Mark In Progress
+                                </button>
+                                <button
+                                    className="bg-green-600 text-white px-5 py-2 rounded-lg hover:bg-green-700 transition"
+                                    onClick={() => handleStatusUpdate("Completed")}
+                                >
+                                    Mark Completed
+                                </button>
+                            </div>
+                        </div>
+                    )}
+
                     <div className="bg-white rounded-2xl shadow-lg p-6 hover:shadow-xl transition">
                         <h2 className="text-2xl font-semibold mb-4 text-gray-800">Assignment</h2>
                         <div className="border-l-2 border-indigo-400 pl-4 space-y-4">
                             <div>
                                 <p className="text-sm text-gray-500">Assigned To</p>
-                                <p className="font-medium text-gray-800">{data.assigned_to || "N/A"}</p>
+                                <p className="font-medium text-gray-800">{data.assigned_to_fullname || "N/A"}</p>
                             </div>
                             <div>
                                 <p className="text-sm text-gray-500">Assigned By</p>

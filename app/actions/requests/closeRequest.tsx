@@ -21,6 +21,14 @@ export async function closeServiceRequest({
             throw new Error("Comment is required to close the request");
         }
 
+        const request = await prisma.service_request.findUnique({
+            where: { service_request_id: requestId },
+        });
+
+        if (!request) throw new Error("Service request not found");
+
+        const technicianId = request.assigned_to_technician_id;
+
         const closedStatus = await prisma.service_request_status.findFirst({
             where: { service_request_status_name: "Closed" },
         });
@@ -39,6 +47,30 @@ export async function closeServiceRequest({
                 last_comment: comment,
             },
         });
+
+        if (technicianId) {
+            const technician = await prisma.technician.findUnique({
+                where: { technician_id: technicianId },
+            });
+
+            if (technician) {
+                const activeRequestsCount = await prisma.service_request.count({
+                    where: {
+                        assigned_to_technician_id: technicianId,
+                        service_request_status: {
+                            service_request_status_name: "In Progress",
+                        },
+                    },
+                });
+
+                if (activeRequestsCount < technician.max_requests_allowed) {
+                    await prisma.technician.update({
+                        where: { technician_id: technicianId },
+                        data: { availability_status: "available" },
+                    });
+                }
+            }
+        }
 
         revalidatePath("/hod/requests");
     } catch (error) {

@@ -41,11 +41,11 @@ model users {
   service_dept                                                             service_dept[]
   service_dept_person                                                      service_dept_person[]
   service_request_service_request_assigned_by_user_idTousers               service_request[]                  @relation("service_request_assigned_by_user_idTousers")
-  service_request_service_request_assigned_to_user_idTousers               service_request[]                  @relation("service_request_assigned_to_user_idTousers")
   service_request_service_request_service_request_status_by_user_idTousers service_request[]                  @relation("service_request_service_request_status_by_user_idTousers")
   service_request                                                          service_request[]
   service_request_reply                                                    service_request_reply[]
   service_request_type_wise_person                                         service_request_type_wise_person[]
+  technician                                                               technician?
   user_role                                                                user_role[]
 }
 
@@ -61,6 +61,7 @@ model service_dept {
   users               users                 @relation(fields: [userid], references: [userid], onDelete: NoAction, onUpdate: NoAction, map: "service_dept_ibfk_1")
   service_dept_person service_dept_person[]
   service_type        service_type[]
+  technician          technician[]
 
   @@index([userid], map: "userid")
 }
@@ -92,7 +93,7 @@ model service_request {
   service_request_status_id                                      Int
   service_request_status_datetime                                DateTime?               @db.DateTime(0)
   service_request_status_by_user_id                              Int?
-  assigned_to_user_id                                            Int?
+  assigned_to_technician_id                                      Int?
   assigned_datetime                                              DateTime?               @db.DateTime(0)
   assigned_by_user_id                                            Int?
   assigned_description                                           String?                 @db.VarChar(250)
@@ -106,7 +107,7 @@ model service_request {
   attachment_path5                                               String?                 @db.VarChar(250)
   last_comment                                                   String?                 @db.Text
   users_service_request_assigned_by_user_idTousers               users?                  @relation("service_request_assigned_by_user_idTousers", fields: [assigned_by_user_id], references: [userid], onDelete: NoAction, onUpdate: NoAction, map: "fk_assigned_by_user")
-  users_service_request_assigned_to_user_idTousers               users?                  @relation("service_request_assigned_to_user_idTousers", fields: [assigned_to_user_id], references: [userid], onDelete: NoAction, onUpdate: NoAction, map: "fk_assigned_to_user")
+  technician                                                     technician?             @relation(fields: [assigned_to_technician_id], references: [technician_id], map: "fk_assigned_to_technician")
   users_service_request_service_request_status_by_user_idTousers users?                  @relation("service_request_service_request_status_by_user_idTousers", fields: [service_request_status_by_user_id], references: [userid], map: "fk_status_by_user")
   service_request_status                                         service_request_status  @relation(fields: [service_request_status_id], references: [service_request_status_id], onDelete: NoAction, onUpdate: NoAction, map: "service_request_ibfk_1")
   service_request_type                                           service_type            @relation(fields: [service_request_type_id], references: [service_type_id], onDelete: NoAction, onUpdate: NoAction, map: "service_request_ibfk_2")
@@ -115,10 +116,10 @@ model service_request {
 
   @@index([service_request_status_id], map: "service_request_status_id")
   @@index([userid], map: "userid")
-  @@index([assigned_to_user_id], map: "fk_assigned_to_user")
   @@index([assigned_by_user_id], map: "fk_assigned_by_user")
   @@index([service_request_type_id], map: "service_request_ibfk_2")
   @@index([service_request_status_by_user_id], map: "fk_status_by_user")
+  @@index([assigned_to_technician_id], map: "fk_assigned_to_technician")
 }
 
 model service_request_reply {
@@ -179,4 +180,22 @@ model service_type {
   service_dept      service_dept      @relation(fields: [dept_id], references: [service_dept_id], onDelete: NoAction, onUpdate: NoAction, map: "service_type_ibfk_2")
 
   @@index([dept_id], map: "service_type_ibfk_2")
+}
+
+model technician {
+  technician_id        Int                            @id
+  max_requests_allowed Int                            @default(5)
+  availability_status  technician_availability_status @default(available)
+  service_dept_id      Int
+  service_request      service_request[]
+  users                users                          @relation(fields: [technician_id], references: [userid], onDelete: Cascade, map: "technician_ibfk_1")
+  service_dept         service_dept                   @relation(fields: [service_dept_id], references: [service_dept_id], map: "technician_ibfk_2")
+
+  @@index([service_dept_id], map: "service_dept_id")
+}
+
+enum technician_availability_status {
+  available
+  busy
+  on_leave
 }

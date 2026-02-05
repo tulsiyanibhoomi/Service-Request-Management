@@ -36,9 +36,8 @@ export default function LoginPage() {
             if (data.success) {
                 const role = data.user.role.toLowerCase()
                 const roleKey = role.toLowerCase() as keyof typeof ROUTES.DASHBOARD_ROUTES
-                const redirectUrl = ROUTES.DASHBOARD_ROUTES[roleKey] || "/dashboard"
+                const redirectUrl = ROUTES.DASHBOARD_ROUTES[roleKey] || "/"
                 router.push(redirectUrl)
-                console.log("Sign in successful, redirecting to", redirectUrl)
             } else {
                 setError(data.error || "Sign in failed")
             }

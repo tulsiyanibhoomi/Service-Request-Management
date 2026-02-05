@@ -41,6 +41,9 @@ export async function proxy(req: NextRequest) {
             case "hod":
                 url.pathname = "/hod/dashboard"
                 break
+            case "technician":
+                url.pathname = "/technician/dashboard"
+                break
             default:
                 url.pathname = "/"
         }
@@ -80,6 +83,12 @@ export async function proxy(req: NextRequest) {
         return NextResponse.rewrite(url)
     }
 
+    if (path.startsWith("/technician") && role !== "technician") {
+        const url = req.nextUrl.clone()
+        url.pathname = "/403"
+        return NextResponse.rewrite(url)
+    }
+
     return NextResponse.next()
 }
 
@@ -90,5 +99,6 @@ export const config = {
         "/admin/:path*",
         "/employee/:path*",
         "/hod/:path*",
+        "/technician/:path*"
     ],
 }

@@ -6,25 +6,13 @@ export async function GET() {
     try {
         const user = await getCurrentUser();
 
-        const HOD_ID = user.userid;
-
-        const hodDept = await prisma.service_dept_person.findFirst({
-            where: {
-                userid: HOD_ID,
-                is_hod: true,
-            },
-            select: {
-                service_dept_id: true,
-            },
-        });
+        const TECHNICIAN_ID = user.userid;
 
         const requests = await prisma.service_request.findMany({
             where: {
-                service_request_type: {
-                    dept_id: hodDept?.service_dept_id,
-                },
+                assigned_to_technician_id: TECHNICIAN_ID,
                 service_request_status: {
-                    service_request_status_name: "Pending",
+                    service_request_status_name: "Approved",
                 },
             },
             orderBy: {
@@ -35,7 +23,6 @@ export async function GET() {
                 service_request_no: true,
                 service_request_title: true,
                 priority_level: true,
-                service_request_datetime: true,
                 service_request_type: {
                     select: {
                         service_type_name: true,
@@ -50,14 +37,13 @@ export async function GET() {
             title: req.service_request_title,
             type: req.service_request_type.service_type_name,
             priority: req.priority_level,
-            date: req.service_request_datetime,
         }));
 
         return NextResponse.json(formatted);
     } catch (err) {
-        console.error("HOD Requests API error:", err);
+        console.error("Technician Requests API error:", err);
         return NextResponse.json(
-            { message: "Failed to load HOD requests" },
+            { message: "Failed to load Technician requests" },
             { status: 500 }
         );
     }

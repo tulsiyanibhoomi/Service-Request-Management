@@ -11,6 +11,7 @@ type TableAction<T> = {
 
 type Props<T> = {
     title: React.ReactNode;
+    tableTitle?: string;
     overview: Overview;
     tableData: T[];
     tableColumns: string[];
@@ -20,6 +21,7 @@ type Props<T> = {
 
 export default function CommonDashboard<T>({
     title,
+    tableTitle,
     overview,
     tableData,
     tableColumns,
@@ -27,12 +29,20 @@ export default function CommonDashboard<T>({
     tableRowActions,
 }: Props<T>) {
 
-    const cards = [
-        { title: "Total Requests", value: overview.total, color: "bg-yellow-100 text-yellow-800" },
-        { title: "Pending", value: overview.pending, color: "bg-blue-100 text-blue-800" },
-        { title: "In Progress", value: overview.in_progress, color: "bg-red-100 text-red-800" },
-        { title: "Completed", value: overview.completed, color: "bg-green-100 text-green-800" },
+    const allCards = [
+        { key: "total", title: "Total Requests", color: "bg-yellow-100 text-yellow-800" },
+        { key: "pending", title: "Pending", color: "bg-blue-100 text-blue-800" },
+        { key: "approved", title: "Approved", color: "bg-purple-100 text-purple-800" },
+        { key: "in_progress", title: "In Progress", color: "bg-red-100 text-red-800" },
+        { key: "completed", title: "Completed", color: "bg-green-100 text-green-800" },
     ];
+
+    const cards = allCards
+        .filter(card => overview[card.key as keyof Overview] !== undefined)
+        .map(card => ({
+            ...card,
+            value: overview[card.key as keyof Overview] as number
+        }));
 
     const [user, setUser] = useState(null);
     const [redirectURL, setRedirectURL] = useState("/requests");
@@ -70,22 +80,30 @@ export default function CommonDashboard<T>({
 
             <div className="bg-white p-6 rounded-lg shadow">
                 <div className="flex justify-between items-center mb-4">
-                    <h2 className="text-2xl font-semibold mb-4">Requests</h2>
-                    <Link
+                    <h2 className="text-2xl font-semibold mb-4">
+                        {tableTitle ? tableTitle : "Requests"}
+                    </h2>                    <Link
                         href={redirectURL}
                         className="px-4 py-2 bg-gray-200 text-gray-800 rounded-lg shadow hover:bg-gray-300 transition"
                     >
-                        View All Requests
+                        View All {tableTitle ? tableTitle : "Requests"}
                     </Link>
                 </div>
                 <div className="overflow-x-auto">
-                    <Table
-                        data={Array.isArray(tableData) ? tableData : []}
-                        columns={tableColumns}
-                        rowKey={tableRowKey as string}
-                        rowActions={tableRowActions}
-                        rowClickRoute={(row) => `${redirectURL}/${row.service_request_id}`}
-                    />
+
+                    {tableData.length > 0 ? (
+                        <Table
+                            data={tableData}
+                            columns={tableColumns}
+                            rowKey={tableRowKey as string}
+                            rowActions={tableRowActions}
+                            rowClickRoute={(row) => `${redirectURL}/${row[tableRowKey]}`}
+                        />
+                    ) : (
+                        <div className="p-6 text-center text-gray-500">
+                            No {tableTitle ? tableTitle : "Requests"?.toString().toLowerCase()} available.
+                        </div>
+                    )}
                 </div>
             </div>
         </div>
