@@ -9,8 +9,8 @@ export async function GET() {
 
   try {
     const requests = await prisma.service_request.findMany({
-      where: { userid: EMPLOYEE_ID },
-      orderBy: { service_request_datetime: "desc" },
+      where: { employee_id: EMPLOYEE_ID },
+      orderBy: { submitted_at: "desc" },
       select: {
         service_request_id: true,
         service_request_no: true,
@@ -22,9 +22,8 @@ export async function GET() {
         service_request_type: {
           select: { service_type_name: true },
         },
-        service_request_datetime: true,
       },
-      take: 5
+      take: 5,
     });
 
     const formatted = requests.map((req) => ({
@@ -34,7 +33,6 @@ export async function GET() {
       type: req.service_request_type.service_type_name,
       priority: req.priority_level,
       status: req.service_request_status.service_request_status_name,
-      date: req.service_request_datetime,
     }));
 
     return NextResponse.json(formatted);
@@ -42,7 +40,7 @@ export async function GET() {
     console.error("Employee Requests API error:", err);
     return NextResponse.json(
       { message: "Failed to load employee requests" },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

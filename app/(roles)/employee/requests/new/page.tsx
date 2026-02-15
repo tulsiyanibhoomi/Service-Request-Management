@@ -1,293 +1,230 @@
-'use client';
-
-import addRequest from '@/app/actions/requests/addRequest';
-import { useState, useEffect } from 'react';
-
-interface User {
-    username: string;
-    initials: string;
-}
-
-type EmployeeOverview = {
-    total: number;
-    pending: number;
-    in_progress: number;
-    completed: number;
-};
+"use client";
+import React, { useState } from "react";
+import addRequest from "@/app/actions/requests/addRequest";
+import editRequest from "@/app/actions/requests/editRequest";
+import { useRequestFormData } from "./use-form-data";
+import FileUploader from "./file-upload";
 
 const NewRequest = () => {
-    const [formData, setFormData] = useState({
-        serviceRequestNo: '',
-        serviceRequestDateTime: '',
-        serviceRequestTypeId: '',
-        serviceRequestTitle: '',
-        serviceRequestDescription: '',
-        urgency: '',
-        attachmentPaths: [] as File[],
-    });
+  const [removedFiles, setRemovedFiles] = useState<string[]>([]);
 
-    useEffect(() => {
-        async function fetchFormData() {
-            const res = await fetch('/api/auth/current-user');
-            const { user } = await res.json();
+  const { formData, setFormData, requestTypes, loading, requestId } =
+    useRequestFormData();
 
-            const overviewRes = await fetch("/api/employee/overview");
-            const overviewData: EmployeeOverview = await overviewRes.json();
+  if (loading || !formData) return <p>Loading...</p>;
 
-            const requestNumber = overviewData.total + 1;
+  const handleChange = (
+    e: React.ChangeEvent<
+      HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement
+    >,
+  ) => {
+    const { name, value } = e.target;
+    setFormData((prev: any) => ({ ...prev, [name]: value }));
+  };
 
-            const initials = user.fullname
-                .split(' ')
-                .map((n: any[]) => n[0])
-                .join('');
+  const getPublicId = (url: string) => {
+    const parts = url.split("/");
+    const fileName = parts.slice(-2).join("/");
+    console.log(fileName.replace(/\.[^/.]+$/, ""));
+    return fileName.replace(/\.[^/.]+$/, "");
+  };
 
-            const serviceRequestNo = `${initials.toUpperCase()}-${String(requestNumber).padStart(4, '0')}`;
+  const handleRemoveExisting = (idx: number) => {
+    const fileUrl = formData.existingFiles[idx];
+    setRemovedFiles((prev) => [...prev, fileUrl]);
+    setFormData((prev: any) => ({
+      ...prev,
+      existingFiles: prev.existingFiles.filter((_: any, i: any) => i !== idx),
+    }));
+  };
 
-            const typeRes = await fetch("/api/request-types/type-names");
-            const data = await typeRes.json();
-            setRequestTypes(data);
+  const handleRemoveNew = (idx: number) =>
+    setFormData((prev: any) => ({
+      ...prev,
+      newFiles: prev.newFiles.filter((_: any, i: number) => i !== idx),
+    }));
 
-            setFormData(prev => ({
-                ...prev,
-                serviceRequestNo,
-            }));
-        }
-        fetchFormData();
-    }, []);
+  const uploadToCloudinary = async (file: File) => {
+    const formData = new FormData();
+    formData.append("file", file);
+    formData.append("upload_preset", "unsigned_requests");
+    formData.append("folder", "requests");
 
-    const [requestTypes, setRequestTypes] = useState([]);
-
-    const handleChange = (
-        e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>
-    ) => {
-        const { name, value } = e.target;
-        setFormData(prev => ({
-            ...prev,
-            [name]: value,
-        }));
-    };
-
-    const handleSubmit = async (e: React.FormEvent) => {
-        e.preventDefault();
-
-        const data = new FormData();
-        data.append("serviceRequestNo", formData.serviceRequestNo);
-        data.append("serviceRequestTitle", formData.serviceRequestTitle);
-        data.append("serviceRequestDescription", formData.serviceRequestDescription);
-        data.append("serviceRequestTypeId", formData.serviceRequestTypeId);
-        data.append("urgency", formData.urgency);
-        data.append("serviceRequestDateTime", formData.serviceRequestDateTime);
-
-        formData.attachmentPaths.forEach((file) => data.append("attachmentPaths", file));
-
-        await addRequest(data);
-
-    };
-
-
-    const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        const files = e.target.files;
-        if (!files) return;
-
-        setFormData(prev => ({
-            ...prev,
-            attachmentPaths: [...prev.attachmentPaths, ...Array.from(files)],
-        }));
-    };
-
-    const handleRemoveFile = (index: number) => {
-        setFormData(prev => ({
-            ...prev,
-            attachmentPaths: prev.attachmentPaths.filter((_, i) => i !== index),
-        }));
-    };
-
-    return (
-        <div className="max-w-5xl mx-auto mt-10 p-6 bg-white rounded-2xl shadow-lg">
-            <h2 className="text-3xl font-bold text-center mb-6 text-gray-800">
-                Raise a Service Request
-            </h2>
-            <form onSubmit={handleSubmit} className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div className="space-y-4">
-                    <div className="flex flex-col">
-                        <label htmlFor="serviceRequestNo" className="font-semibold text-gray-700">
-                            Service Request Number
-                        </label>
-                        <input
-                            type="text"
-                            id="serviceRequestNo"
-                            name="serviceRequestNo"
-                            value={formData.serviceRequestNo}
-                            readOnly
-                            className="border border-gray-300 p-3 rounded-lg bg-gray-100 cursor-not-allowed focus:outline-none"
-                            placeholder="Service Request Number"
-                        />
-
-                    </div>
-
-                    <div className="flex flex-col">
-                        <label htmlFor="serviceRequestTitle" className="font-semibold text-gray-700">
-                            Request Title
-                        </label>
-                        <input
-                            type="text"
-                            id="serviceRequestTitle"
-                            name="serviceRequestTitle"
-                            value={formData.serviceRequestTitle}
-                            onChange={handleChange}
-                            className="border border-gray-300 p-3 rounded-lg focus:ring-2 focus:ring-blue-400 focus:outline-none"
-                            placeholder="Enter request title"
-                            required
-                        />
-                    </div>
-
-                    <div className="flex flex-col">
-                        <label htmlFor="serviceRequestDescription" className="font-semibold text-gray-700">
-                            Description
-                        </label>
-                        <textarea
-                            id="serviceRequestDescription"
-                            name="serviceRequestDescription"
-                            value={formData.serviceRequestDescription}
-                            onChange={handleChange}
-                            rows={6}
-                            className="border border-gray-300 p-3 rounded-lg focus:ring-2 focus:ring-blue-400 focus:outline-none"
-                            placeholder="Describe the issue in detail"
-                            required
-                        />
-                    </div>
-                </div>
-
-                <div className="space-y-4">
-                    <div className="flex flex-col">
-                        <label
-                            htmlFor="serviceRequestTypeId"
-                            className="font-semibold text-gray-700"
-                        >
-                            Request Type
-                        </label>
-
-                        <select
-                            id="serviceRequestTypeId"
-                            name="serviceRequestTypeId"
-                            value={formData.serviceRequestTypeId}
-                            onChange={handleChange}
-                            className="border border-gray-300 p-3 rounded-lg focus:ring-2 focus:ring-blue-400 focus:outline-none"
-                            required
-                        >
-                            <option value="">Select a Type</option>
-
-                            {requestTypes.map((t: any) => (
-                                <option key={t.type_id} value={t.type_id}>
-                                    {t.type}
-                                </option>
-                            ))}
-                        </select>
-                    </div>
-
-                    <div className="flex flex-col">
-                        <label htmlFor="urgency" className="font-semibold text-gray-700">
-                            Urgency
-                        </label>
-                        <select
-                            id="urgency"
-                            name="urgency"
-                            value={formData.urgency}
-                            onChange={handleChange}
-                            className="border border-gray-300 p-3 rounded-lg focus:ring-2 focus:ring-blue-400 focus:outline-none"
-                            required
-                        >
-                            <option value="">Select Urgency</option>
-                            <option value="Low">Low - Can wait</option>
-                            <option value="Medium">Medium - Affects work</option>
-                            <option value="High">High - Work stopped</option>
-                        </select>
-                    </div>
-
-                    <div className="flex flex-col">
-                        <label htmlFor="attachmentPaths" className="font-semibold text-gray-700 mb-2">
-                            Attachments
-                        </label>
-
-                        {/* Drag & Drop area */}
-                        <div
-                            className="border-2 border-dashed border-gray-300 p-4 rounded-lg flex flex-col items-center justify-center cursor-pointer hover:border-blue-400 transition-colors duration-200"
-                            onDragOver={(e: React.DragEvent<HTMLDivElement>) => e.preventDefault()}
-                            onDrop={(e: React.DragEvent<HTMLDivElement>) => {
-                                e.preventDefault();
-                                const files = Array.from(e.dataTransfer.files);
-                                handleFileChange({
-                                    target: { files } as unknown as EventTarget & { files: FileList },
-                                } as React.ChangeEvent<HTMLInputElement>);
-                            }}
-                            onClick={() => document.getElementById("attachmentPaths")?.click()}
-                        >
-                            <p className="text-gray-500 text-sm text-center">
-                                Drag & drop files here, or click to select
-                            </p>
-                            <p className="text-gray-400 text-xs mt-1">Supports multiple files</p>
-                        </div>
-
-                        <input
-                            type="file"
-                            id="attachmentPaths"
-                            name="attachmentPaths"
-                            multiple
-                            onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
-                                handleFileChange(e);
-                                e.target.value = "";
-                            }}
-                            className="hidden"
-                        />
-
-                        {formData.attachmentPaths.length > 0 && (
-                            <ul className="mt-3 space-y-2">
-                                {formData.attachmentPaths.map((file, index) => (
-                                    <li
-                                        key={index}
-                                        className="flex items-center justify-between bg-gray-100 p-2 rounded-md hover:bg-gray-200 transition-colors duration-200"
-                                    >
-                                        <span className="truncate">{file.name}</span>
-                                        <button
-                                            type="button"
-                                            onClick={() => handleRemoveFile(index)}
-                                            className="text-red-500 hover:text-red-700 p-1 rounded-full transition-colors duration-200"
-                                        >
-                                            ×
-                                        </button>
-                                    </li>
-                                ))}
-                            </ul>
-                        )}
-                    </div>
-
-                    <div className="flex flex-col">
-                        <label htmlFor="serviceRequestDateTime" className="font-semibold text-gray-700">
-                            Preferred date and time (Optional)
-                        </label>
-                        <input
-                            type="datetime-local"
-                            id="serviceRequestDateTime"
-                            name="serviceRequestDateTime"
-                            value={formData.serviceRequestDateTime}
-                            onChange={handleChange}
-                            className="border border-gray-300 p-3 rounded-lg focus:ring-2 focus:ring-blue-400 focus:outline-none"
-                        />
-
-                    </div>
-                </div>
-
-                <div className="col-span-2 flex justify-center">
-                    <button
-                        type="submit"
-                        className="bg-blue-500 text-white px-6 py-3 rounded-lg hover:bg-blue-600 transition"
-                    >
-                        Submit Request
-                    </button>
-                </div>
-            </form>
-        </div>
+    const cloudName = process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME;
+    const res = await fetch(
+      `https://api.cloudinary.com/v1_1/${cloudName}/upload`,
+      { method: "POST", body: formData },
     );
+
+    if (!res.ok) throw new Error("Cloudinary upload failed");
+
+    const data = await res.json();
+    return data.secure_url;
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+
+    if (removedFiles.length > 0) {
+      const publicIds = removedFiles.map(getPublicId);
+      await fetch("/api/delete-file", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ public_ids: publicIds }),
+      });
+    }
+
+    const uploadedUrls = await Promise.all(
+      formData.newFiles.map((file: File) => uploadToCloudinary(file)),
+    );
+
+    const allFiles = [...formData.existingFiles, ...uploadedUrls];
+
+    const data = new FormData();
+    data.append("serviceRequestNo", formData.serviceRequestNo);
+    data.append("serviceRequestTitle", formData.serviceRequestTitle);
+    data.append(
+      "serviceRequestDescription",
+      formData.serviceRequestDescription,
+    );
+    data.append("serviceRequestTypeId", formData.serviceRequestTypeId);
+    data.append("urgency", formData.urgency);
+    data.append("serviceRequestDateTime", formData.serviceRequestDateTime);
+    data.append("employee_id", String(formData.employee_id));
+    data.append("existingFiles", JSON.stringify(allFiles));
+
+    if (requestId) {
+      await editRequest(Number(requestId), data);
+    } else {
+      await addRequest(data);
+    }
+  };
+
+  return (
+    <div className="max-w-5xl mx-auto mt-10 p-6 bg-white rounded-2xl shadow-lg">
+      <h2 className="text-3xl font-bold text-center mb-8 text-gray-800">
+        {requestId ? "Edit Service Request" : "Raise a Service Request"}
+      </h2>
+      <form
+        onSubmit={handleSubmit}
+        className="grid grid-cols-1 md:grid-cols-2 gap-6"
+      >
+        <div className="space-y-4">
+          <Input
+            label="Service Request Number"
+            value={formData.serviceRequestNo}
+            readOnly
+          />
+          <Input
+            label="Request Title"
+            name="serviceRequestTitle"
+            value={formData.serviceRequestTitle}
+            onChange={handleChange}
+            required
+          />
+          <TextArea
+            label="Description"
+            name="serviceRequestDescription"
+            value={formData.serviceRequestDescription}
+            onChange={handleChange}
+            required
+          />
+        </div>
+
+        <div className="space-y-4">
+          <Select
+            label="Request Type"
+            name="serviceRequestTypeId"
+            value={formData.serviceRequestTypeId}
+            onChange={handleChange}
+            options={requestTypes.map((t: any) => ({
+              value: t.type_id,
+              label: t.type,
+            }))}
+            required
+          />
+          <Select
+            label="Urgency"
+            name="urgency"
+            value={formData.urgency}
+            onChange={handleChange}
+            options={[
+              { value: "Low", label: "Low - Can wait" },
+              { value: "Medium", label: "Medium - Affects work" },
+              { value: "High", label: "High - Work stopped" },
+            ]}
+            required
+          />
+          <FileUploader
+            existingFiles={formData.existingFiles}
+            newFiles={formData.newFiles}
+            onAddNew={(files: any) =>
+              setFormData((prev: any) => ({
+                ...prev,
+                newFiles: [...prev.newFiles, ...files],
+              }))
+            }
+            onRemoveExisting={handleRemoveExisting}
+            onRemoveNew={handleRemoveNew}
+          />
+          <Input
+            label="Preferred date and time (Optional)"
+            type="datetime-local"
+            name="serviceRequestDateTime"
+            value={formData.serviceRequestDateTime}
+            onChange={handleChange}
+          />
+        </div>
+
+        <div className="col-span-2 flex justify-center">
+          <button
+            type="submit"
+            className="bg-blue-500 text-white px-6 py-3 rounded-lg hover:bg-blue-600 transition"
+          >
+            Submit Request
+          </button>
+        </div>
+      </form>
+    </div>
+  );
 };
 
 export default NewRequest;
+
+const Input = ({ label, ...props }: any) => (
+  <div className="flex flex-col">
+    <label className="font-semibold text-gray-700 mb-1">{label}</label>
+    <input
+      {...props}
+      className="border border-gray-300 p-3 rounded-lg focus:ring-2 focus:ring-blue-400 focus:outline-none bg-gray-100"
+    />
+  </div>
+);
+
+const TextArea = ({ label, ...props }: any) => (
+  <div className="flex flex-col">
+    <label className="font-semibold text-gray-700 mb-1">{label}</label>
+    <textarea
+      {...props}
+      rows={6}
+      className="border border-gray-300 p-3 rounded-lg focus:ring-2 focus:ring-blue-400 focus:outline-none"
+    />
+  </div>
+);
+
+const Select = ({ label, options, ...props }: any) => (
+  <div className="flex flex-col">
+    <label className="font-semibold text-gray-700 mb-1">{label}</label>
+    <select
+      {...props}
+      className="border border-gray-300 p-3 rounded-lg focus:ring-2 focus:ring-blue-400 focus:outline-none"
+    >
+      <option value="">Select</option>
+      {options.map((opt: any) => (
+        <option key={opt.value} value={opt.value}>
+          {opt.label}
+        </option>
+      ))}
+    </select>
+  </div>
+);

@@ -29,24 +29,23 @@ model user_role {
 }
 
 model users {
-  userid                                                                   Int                                @id @default(autoincrement())
-  username                                                                 String                             @unique(map: "username") @db.VarChar(50)
-  fullname                                                                 String                             @db.VarChar(100)
-  email                                                                    String                             @unique(map: "email") @db.VarChar(100)
-  password                                                                 String                             @db.VarChar(255)
-  isactive                                                                 Boolean?                           @default(true)
-  created                                                                  DateTime?                          @default(now()) @db.Timestamp(0)
-  modified                                                                 DateTime?                          @default(now()) @db.Timestamp(0)
-  salt                                                                     String                             @default("mysaltvalue") @db.VarChar(255)
-  service_dept                                                             service_dept[]
-  service_dept_person                                                      service_dept_person[]
-  service_request_service_request_assigned_by_user_idTousers               service_request[]                  @relation("service_request_assigned_by_user_idTousers")
-  service_request_service_request_service_request_status_by_user_idTousers service_request[]                  @relation("service_request_service_request_status_by_user_idTousers")
-  service_request                                                          service_request[]
-  service_request_reply                                                    service_request_reply[]
-  service_request_type_wise_person                                         service_request_type_wise_person[]
-  technician                                                               technician?
-  user_role                                                                user_role[]
+  userid                           Int                                @id @default(autoincrement())
+  username                         String                             @unique(map: "username") @db.VarChar(50)
+  fullname                         String                             @db.VarChar(100)
+  email                            String                             @unique(map: "email") @db.VarChar(100)
+  password                         String                             @db.VarChar(255)
+  isactive                         Boolean?                           @default(true)
+  created                          DateTime?                          @default(now()) @db.Timestamp(0)
+  modified                         DateTime?                          @default(now()) @db.Timestamp(0)
+  salt                             String                             @default("mysaltvalue") @db.VarChar(255)
+  service_dept                     service_dept[]
+  service_dept_person              service_dept_person[]
+  service_request                  service_request[]
+  service_request_reply            service_request_reply[]
+  service_request_status_history   service_request_status_history[]
+  service_request_type_wise_person service_request_type_wise_person[]
+  technician                       technician?
+  user_role                        user_role[]
 }
 
 model service_dept {
@@ -83,42 +82,34 @@ model service_dept_person {
 }
 
 model service_request {
-  service_request_id                                             Int                     @id @default(autoincrement())
-  service_request_no                                             String                  @db.VarChar(500)
-  service_request_datetime                                       DateTime?               @db.DateTime(0)
-  service_request_type_id                                        Int
-  service_request_title                                          String                  @db.VarChar(250)
-  service_request_description                                    String                  @db.VarChar(2000)
-  attachment_path                                                String?                 @db.VarChar(250)
-  service_request_status_id                                      Int
-  service_request_status_datetime                                DateTime?               @db.DateTime(0)
-  service_request_status_by_user_id                              Int?
-  assigned_to_technician_id                                      Int?
-  assigned_datetime                                              DateTime?               @db.DateTime(0)
-  assigned_by_user_id                                            Int?
-  assigned_description                                           String?                 @db.VarChar(250)
-  userid                                                         Int
-  created                                                        DateTime                @db.DateTime(0)
-  modified                                                       DateTime                @db.DateTime(0)
-  priority_level                                                 String?                 @db.VarChar(50)
-  attachment_path2                                               String?                 @db.VarChar(250)
-  attachment_path3                                               String?                 @db.VarChar(250)
-  attachment_path4                                               String?                 @db.VarChar(250)
-  attachment_path5                                               String?                 @db.VarChar(250)
-  last_comment                                                   String?                 @db.Text
-  users_service_request_assigned_by_user_idTousers               users?                  @relation("service_request_assigned_by_user_idTousers", fields: [assigned_by_user_id], references: [userid], onDelete: NoAction, onUpdate: NoAction, map: "fk_assigned_by_user")
-  technician                                                     technician?             @relation(fields: [assigned_to_technician_id], references: [technician_id], map: "fk_assigned_to_technician")
-  users_service_request_service_request_status_by_user_idTousers users?                  @relation("service_request_service_request_status_by_user_idTousers", fields: [service_request_status_by_user_id], references: [userid], map: "fk_status_by_user")
-  service_request_status                                         service_request_status  @relation(fields: [service_request_status_id], references: [service_request_status_id], onDelete: NoAction, onUpdate: NoAction, map: "service_request_ibfk_1")
-  service_request_type                                           service_type            @relation(fields: [service_request_type_id], references: [service_type_id], onDelete: NoAction, onUpdate: NoAction, map: "service_request_ibfk_2")
-  users                                                          users                   @relation(fields: [userid], references: [userid], onDelete: NoAction, onUpdate: NoAction, map: "service_request_ibfk_3")
-  service_request_reply                                          service_request_reply[]
+  service_request_id             Int                              @id @default(autoincrement())
+  service_request_no             String                           @db.VarChar(500)
+  service_request_type_id        Int
+  service_request_title          String                           @db.VarChar(250)
+  service_request_description    String                           @db.VarChar(2000)
+  attachment_path                String?                          @db.VarChar(250)
+  service_request_status_id      Int
+  assigned_to_technician_id      Int?
+  assigned_by_user_id            Int?
+  employee_id                    Int
+  priority_level                 String?                          @db.VarChar(50)
+  attachment_path2               String?                          @db.VarChar(250)
+  attachment_path3               String?                          @db.VarChar(250)
+  attachment_path4               String?                          @db.VarChar(250)
+  attachment_path5               String?                          @db.VarChar(250)
+  submitted_at                   DateTime?                        @db.DateTime(0)
+  service_request_datetime       DateTime?                        @db.DateTime(0)
+  technician                     technician?                      @relation(fields: [assigned_to_technician_id], references: [technician_id], map: "fk_assigned_to_technician")
+  service_request_status         service_request_status           @relation(fields: [service_request_status_id], references: [service_request_status_id], onDelete: NoAction, onUpdate: NoAction, map: "service_request_ibfk_1")
+  service_request_type           service_type                     @relation(fields: [service_request_type_id], references: [service_type_id], onDelete: NoAction, onUpdate: NoAction, map: "service_request_ibfk_2")
+  users                          users                            @relation(fields: [employee_id], references: [userid], onDelete: NoAction, onUpdate: NoAction, map: "service_request_ibfk_3")
+  service_request_reply          service_request_reply[]
+  service_request_status_history service_request_status_history[]
 
   @@index([service_request_status_id], map: "service_request_status_id")
-  @@index([userid], map: "userid")
+  @@index([employee_id], map: "userid")
   @@index([assigned_by_user_id], map: "fk_assigned_by_user")
   @@index([service_request_type_id], map: "service_request_ibfk_2")
-  @@index([service_request_status_by_user_id], map: "fk_status_by_user")
   @@index([assigned_to_technician_id], map: "fk_assigned_to_technician")
 }
 
@@ -145,12 +136,12 @@ model service_request_reply {
 }
 
 model service_request_status {
-  service_request_status_id   Int                     @id @default(autoincrement())
-  service_request_status_name String                  @db.VarChar(250)
-  system_name                 String                  @db.VarChar(100)
-  description                 String?                 @db.VarChar(250)
-  service_request             service_request[]
-  service_request_reply       service_request_reply[]
+  service_request_status_id      Int                              @id @default(autoincrement())
+  service_request_status_name    String                           @db.VarChar(250)
+  description                    String?                          @db.VarChar(250)
+  service_request                service_request[]
+  service_request_reply          service_request_reply[]
+  service_request_status_history service_request_status_history[]
 }
 
 model service_request_type_wise_person {
@@ -192,6 +183,22 @@ model technician {
   service_dept         service_dept                   @relation(fields: [service_dept_id], references: [service_dept_id], map: "technician_ibfk_2")
 
   @@index([service_dept_id], map: "service_dept_id")
+}
+
+model service_request_status_history {
+  id                     BigInt                 @id @default(autoincrement())
+  request_id             Int
+  status_id              Int
+  changed_by_user_id     Int
+  changed_at             DateTime               @default(now()) @db.DateTime(0)
+  notes                  String?                @db.VarChar(255)
+  service_request        service_request        @relation(fields: [request_id], references: [service_request_id], onDelete: Cascade, map: "fk_status_history_request")
+  service_request_status service_request_status @relation(fields: [status_id], references: [service_request_status_id], map: "fk_status_history_status")
+  users                  users                  @relation(fields: [changed_by_user_id], references: [userid], map: "fk_status_history_user")
+
+  @@index([request_id], map: "fk_status_history_request")
+  @@index([status_id], map: "fk_status_history_status")
+  @@index([changed_by_user_id], map: "fk_status_history_user")
 }
 
 enum technician_availability_status {
