@@ -99,6 +99,8 @@ model service_request {
   attachment_path5               String?                          @db.VarChar(250)
   submitted_at                   DateTime?                        @db.DateTime(0)
   service_request_datetime       DateTime?                        @db.DateTime(0)
+  reassignment_requested         Boolean?                         @default(false)
+  reassignment_requested_reason  String?                          @db.VarChar(255)
   technician                     technician?                      @relation(fields: [assigned_to_technician_id], references: [technician_id], map: "fk_assigned_to_technician")
   service_request_status         service_request_status           @relation(fields: [service_request_status_id], references: [service_request_status_id], onDelete: NoAction, onUpdate: NoAction, map: "service_request_ibfk_1")
   service_request_type           service_type                     @relation(fields: [service_request_type_id], references: [service_type_id], onDelete: NoAction, onUpdate: NoAction, map: "service_request_ibfk_2")

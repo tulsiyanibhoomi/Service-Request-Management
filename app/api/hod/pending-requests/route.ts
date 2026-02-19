@@ -28,7 +28,7 @@ export async function GET() {
         },
       },
       orderBy: {
-        service_request_datetime: "desc",
+        submitted_at: "desc",
       },
       select: {
         service_request_id: true,

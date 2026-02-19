@@ -1,15 +1,16 @@
 "use client";
 import deleteRequest from "@/app/actions/requests/deleteRequest";
-import Table from "@/app/components/ui/table";
+import Table from "@/app/components/ui/table/table";
 import { ServiceRequest } from "@/app/types/requests";
 import { useEffect, useState } from "react";
 
 export default function HODRequests() {
-
   const [requests, setRequests] = useState<ServiceRequest[]>([]);
 
   useEffect(() => {
-    fetch("/api/hod/requests").then((res) => res.json()).then(setRequests);
+    fetch("/api/hod/requests")
+      .then((res) => res.json())
+      .then(setRequests);
   }, []);
 
   return (
@@ -21,8 +22,15 @@ export default function HODRequests() {
         <div className="overflow-x-auto">
           <Table
             data={requests}
-            columns={['no', 'title', 'type', 'priority', 'status', 'assigned_to']}
-            rowKey='service_request_id'
+            columns={[
+              "no",
+              "title",
+              "type",
+              "priority",
+              "status",
+              "assigned_to",
+            ]}
+            rowKey="service_request_id"
             rowClickRoute={(row) => `/hod/requests/${row.service_request_id}`}
             onDelete={deleteRequest}
           />
@@ -30,4 +38,4 @@ export default function HODRequests() {
       </div>
     </div>
   );
-} 
+}

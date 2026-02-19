@@ -1,17 +1,29 @@
 "use client";
+
 import React, { useState } from "react";
 import addRequest from "@/app/actions/requests/addRequest";
 import editRequest from "@/app/actions/requests/editRequest";
 import { useRequestFormData } from "./use-form-data";
 import FileUploader from "./file-upload";
+import SkeletonCard from "@/app/components/ui/skeletoncard";
+import CustomError from "@/app/components/ui/error";
 
 const NewRequest = () => {
   const [removedFiles, setRemovedFiles] = useState<string[]>([]);
+  const [submitLoading, setSubmitLoading] = useState(false);
+  const [submitError, setSubmitError] = useState<string | null>(null);
+  const [submitSuccess, setSubmitSuccess] = useState(false);
+  const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
 
-  const { formData, setFormData, requestTypes, loading, requestId } =
+  const { formData, setFormData, requestTypes, loading, error, requestId } =
     useRequestFormData();
 
-  if (loading || !formData) return <p>Loading...</p>;
+  if (loading) return <SkeletonCard />;
+
+  if (error || !formData)
+    return (
+      <CustomError message="Failed to fetch form data. Please try again." />
+    );
 
   const handleChange = (
     e: React.ChangeEvent<
@@ -20,12 +32,25 @@ const NewRequest = () => {
   ) => {
     const { name, value } = e.target;
     setFormData((prev: any) => ({ ...prev, [name]: value }));
+    setFieldErrors((prev) => ({ ...prev, [name]: "" }));
+  };
+
+  const validate = () => {
+    const errors: Record<string, string> = {};
+    if (!formData.serviceRequestTitle?.trim())
+      errors.serviceRequestTitle = "Title is required";
+    if (!formData.serviceRequestDescription?.trim())
+      errors.serviceRequestDescription = "Description is required";
+    if (!formData.serviceRequestTypeId)
+      errors.serviceRequestTypeId = "Please select request type";
+    if (!formData.urgency) errors.urgency = "Please select urgency";
+    setFieldErrors(errors);
+    return Object.keys(errors).length === 0;
   };
 
   const getPublicId = (url: string) => {
     const parts = url.split("/");
     const fileName = parts.slice(-2).join("/");
-    console.log(fileName.replace(/\.[^/.]+$/, ""));
     return fileName.replace(/\.[^/.]+$/, "");
   };
 
@@ -65,38 +90,54 @@ const NewRequest = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    if (removedFiles.length > 0) {
-      const publicIds = removedFiles.map(getPublicId);
-      await fetch("/api/delete-file", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ public_ids: publicIds }),
-      });
-    }
+    if (!validate()) return;
 
-    const uploadedUrls = await Promise.all(
-      formData.newFiles.map((file: File) => uploadToCloudinary(file)),
-    );
+    setSubmitLoading(true);
+    setSubmitError(null);
+    setSubmitSuccess(false);
 
-    const allFiles = [...formData.existingFiles, ...uploadedUrls];
+    try {
+      if (removedFiles.length > 0) {
+        const publicIds = removedFiles.map(getPublicId);
+        const delRes = await fetch("/api/delete-file", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ public_ids: publicIds }),
+        });
+        if (!delRes.ok) throw new Error("Failed to delete removed files");
+      }
 
-    const data = new FormData();
-    data.append("serviceRequestNo", formData.serviceRequestNo);
-    data.append("serviceRequestTitle", formData.serviceRequestTitle);
-    data.append(
-      "serviceRequestDescription",
-      formData.serviceRequestDescription,
-    );
-    data.append("serviceRequestTypeId", formData.serviceRequestTypeId);
-    data.append("urgency", formData.urgency);
-    data.append("serviceRequestDateTime", formData.serviceRequestDateTime);
-    data.append("employee_id", String(formData.employee_id));
-    data.append("existingFiles", JSON.stringify(allFiles));
+      const uploadedUrls = await Promise.all(
+        formData.newFiles.map((file: File) => uploadToCloudinary(file)),
+      );
 
-    if (requestId) {
-      await editRequest(Number(requestId), data);
-    } else {
-      await addRequest(data);
+      const allFiles = [...formData.existingFiles, ...uploadedUrls];
+
+      const data = new FormData();
+      data.append("serviceRequestNo", formData.serviceRequestNo);
+      data.append("serviceRequestTitle", formData.serviceRequestTitle);
+      data.append(
+        "serviceRequestDescription",
+        formData.serviceRequestDescription,
+      );
+      data.append("serviceRequestTypeId", formData.serviceRequestTypeId);
+      data.append("urgency", formData.urgency);
+      data.append("serviceRequestDateTime", formData.serviceRequestDateTime);
+      data.append("employee_id", String(formData.employee_id));
+      data.append("existingFiles", JSON.stringify(allFiles));
+
+      if (requestId) {
+        await editRequest(Number(requestId), data);
+      } else {
+        await addRequest(data);
+      }
+
+      setSubmitSuccess(true);
+    } catch (err: any) {
+      console.error(err);
+      setSubmitError(err.message || "Something went wrong");
+    } finally {
+      setSubmitLoading(false);
     }
   };
 
@@ -105,6 +146,14 @@ const NewRequest = () => {
       <h2 className="text-3xl font-bold text-center mb-8 text-gray-800">
         {requestId ? "Edit Service Request" : "Raise a Service Request"}
       </h2>
+
+      {submitError && <CustomError message={submitError} />}
+      {submitSuccess && (
+        <p className="text-green-600 text-center mb-4">
+          Request submitted successfully!
+        </p>
+      )}
+
       <form
         onSubmit={handleSubmit}
         className="grid grid-cols-1 md:grid-cols-2 gap-6"
@@ -120,14 +169,14 @@ const NewRequest = () => {
             name="serviceRequestTitle"
             value={formData.serviceRequestTitle}
             onChange={handleChange}
-            required
+            error={fieldErrors.serviceRequestTitle}
           />
           <TextArea
             label="Description"
             name="serviceRequestDescription"
             value={formData.serviceRequestDescription}
             onChange={handleChange}
-            required
+            error={fieldErrors.serviceRequestDescription}
           />
         </div>
 
@@ -141,7 +190,7 @@ const NewRequest = () => {
               value: t.type_id,
               label: t.type,
             }))}
-            required
+            error={fieldErrors.serviceRequestTypeId}
           />
           <Select
             label="Urgency"
@@ -153,7 +202,7 @@ const NewRequest = () => {
               { value: "Medium", label: "Medium - Affects work" },
               { value: "High", label: "High - Work stopped" },
             ]}
-            required
+            error={fieldErrors.urgency}
           />
           <FileUploader
             existingFiles={formData.existingFiles}
@@ -179,9 +228,10 @@ const NewRequest = () => {
         <div className="col-span-2 flex justify-center">
           <button
             type="submit"
-            className="bg-blue-500 text-white px-6 py-3 rounded-lg hover:bg-blue-600 transition"
+            disabled={submitLoading}
+            className="bg-blue-500 text-white px-6 py-3 rounded-lg hover:bg-blue-600 transition disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            Submit Request
+            {submitLoading ? "Submitting..." : "Submit Request"}
           </button>
         </div>
       </form>
@@ -191,33 +241,47 @@ const NewRequest = () => {
 
 export default NewRequest;
 
-const Input = ({ label, ...props }: any) => (
+const Input = ({ label, error, ...props }: any) => (
   <div className="flex flex-col">
     <label className="font-semibold text-gray-700 mb-1">{label}</label>
     <input
       {...props}
-      className="border border-gray-300 p-3 rounded-lg focus:ring-2 focus:ring-blue-400 focus:outline-none bg-gray-100"
+      className={`border p-3 rounded-lg focus:ring-2 focus:outline-none ${
+        error
+          ? "border-red-500 focus:ring-red-400"
+          : "border-gray-300 focus:ring-blue-400"
+      } bg-gray-100`}
     />
+    {error && <span className="text-red-500 text-sm mt-1">{error}</span>}
   </div>
 );
 
-const TextArea = ({ label, ...props }: any) => (
+const TextArea = ({ label, error, ...props }: any) => (
   <div className="flex flex-col">
     <label className="font-semibold text-gray-700 mb-1">{label}</label>
     <textarea
       {...props}
       rows={6}
-      className="border border-gray-300 p-3 rounded-lg focus:ring-2 focus:ring-blue-400 focus:outline-none"
+      className={`border p-3 rounded-lg focus:ring-2 focus:outline-none ${
+        error
+          ? "border-red-500 focus:ring-red-400"
+          : "border-gray-300 focus:ring-blue-400"
+      }`}
     />
+    {error && <span className="text-red-500 text-sm mt-1">{error}</span>}
   </div>
 );
 
-const Select = ({ label, options, ...props }: any) => (
+const Select = ({ label, options, error, ...props }: any) => (
   <div className="flex flex-col">
     <label className="font-semibold text-gray-700 mb-1">{label}</label>
     <select
       {...props}
-      className="border border-gray-300 p-3 rounded-lg focus:ring-2 focus:ring-blue-400 focus:outline-none"
+      className={`border p-3 rounded-lg focus:ring-2 focus:outline-none ${
+        error
+          ? "border-red-500 focus:ring-red-400"
+          : "border-gray-300 focus:ring-blue-400"
+      }`}
     >
       <option value="">Select</option>
       {options.map((opt: any) => (
@@ -226,5 +290,6 @@ const Select = ({ label, options, ...props }: any) => (
         </option>
       ))}
     </select>
+    {error && <span className="text-red-500 text-sm mt-1">{error}</span>}
   </div>
 );

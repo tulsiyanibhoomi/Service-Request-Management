@@ -1,5 +1,5 @@
 import { ServiceRequest } from "@/app/types/requests";
-import { formatDate } from "@/app/components/ui/table";
+import { formatDate } from "@/app/components/utils/styles";
 
 interface RequestInfoProps {
   data: ServiceRequest;

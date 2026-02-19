@@ -11,14 +11,17 @@ export type ServiceRequest = {
   status: string;
   assigned_to_userid?: number;
   assigned_to?: number;
+  assigned_on?: Date;
   assigned_to_fullname?: string;
   userid: number;
   username: string;
   userfullname: string;
   priority?: string;
   attachments?: string[];
-  reassign_requested?: boolean;
+  reassignment_requested?: boolean;
+  reassignment_requested_reason?: string;
   status_history: ServiceRequestStatusHistory[];
+  submitted_at: Date;
 };
 
 interface ServiceRequestStatusHistory {
@@ -26,7 +29,8 @@ interface ServiceRequestStatusHistory {
   status: string;
   changed_at: Date;
   changed_by?: {
-    fullname: string;
+    username: string;
   } | null;
+  changed_by_fullname?: string;
   notes?: string | null;
 }

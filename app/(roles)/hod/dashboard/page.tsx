@@ -2,70 +2,63 @@
 
 import { useEffect, useState } from "react";
 import CommonDashboard from "@/app/components/ui/dashboard";
+import SkeletonCard from "@/app/components/ui/skeletoncard";
+import CustomError from "@/app/components/ui/error";
 import { Overview, RecentRequest } from "@/app/types/dashboard";
+import { User } from "@/app/types/user";
 
 export default function HodDashboardPage() {
-  const [overview, setOverview] = useState<Overview>({
-    total: 0,
-    pending: 0,
-    approved: 0,
-    in_progress: 0,
-    completed: 0,
-  });
+  const [overview, setOverview] = useState<Overview | null>(null);
+  const [requests, setRequests] = useState<RecentRequest[] | null>(null);
+  const [user, setUser] = useState<User | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
-  const [requests, setRequests] = useState<RecentRequest[]>([]);
-  const [userName, setUserName] = useState<string>("");
+  async function fetchJson<T>(url: string): Promise<T> {
+    const res = await fetch(url);
+    if (!res.ok) throw new Error(`${url} failed with status ${res.status}`);
+    return res.json();
+  }
 
   useEffect(() => {
-    fetch("/api/hod/overview")
-      .then((res) => res.json())
-      .then(setOverview);
+    const fetchData = async () => {
+      setLoading(true);
+      setError(null);
+      try {
+        const [overviewData, requestsData, userData] = await Promise.all([
+          fetchJson<Overview>("/api/hod/overview"),
+          fetchJson<RecentRequest[]>("/api/hod/pending-requests"),
+          fetchJson<{ user: User | null }>("/api/auth/current-user"),
+        ]);
 
-    fetch("/api/hod/pending-requests")
-      .then((res) => res.json())
-      .then(setRequests);
+        setOverview(overviewData);
+        setRequests(requestsData);
+        setUser(userData.user ?? null);
+      } catch (err: any) {
+        console.error(err);
+        setError(err.message || "Failed to fetch data");
+      } finally {
+        setLoading(false);
+      }
+    };
 
-    fetch("/api/auth/current-user")
-      .then((res) => res.json())
-      .then((data) => setUserName(data.user.fullname || "User"));
+    fetchData();
   }, []);
+
+  if (loading) return <SkeletonCard />;
+  if (error) return <CustomError message="Could not fetch data" />;
+  if (!overview || !requests || !user)
+    return <CustomError message="Data not available" />;
 
   return (
     <CommonDashboard<RecentRequest>
-      title={
-        <div className="flex w-full items-center">
-          <span>Hello, {userName}</span>
-        </div>
-      }
+      user={user}
+      title={<span>Hello, {user.fullname}</span>}
       overview={overview}
+      tableTitle="Pending Requests"
       tableData={requests}
       tableColumns={["no", "title", "type", "priority", "date"]}
       tableRowKey="service_request_id"
-      // tableRowActions={[
-      //     {
-      //         name: "Actions",
-      //         render: (row: any) => (
-      //             <div className="flex gap-2">
-      //                 <button
-      //                     className="bg-green-600 text-white px-3 py-1 rounded hover:bg-green-700 transition"
-      //                     onClick={e => {
-      //                         e.stopPropagation();
-      //                     }}
-      //                 >
-      //                     Accept
-      //                 </button>
-      //                 <button
-      //                     className="bg-red-600 text-white px-3 py-1 rounded hover:bg-red-700 transition"
-      //                     onClick={e => {
-      //                         e.stopPropagation();
-      //                     }}
-      //                 >
-      //                     Decline
-      //                 </button>
-      //             </div>
-      //         ),
-      //     },
-      // ]}
     />
   );
 }

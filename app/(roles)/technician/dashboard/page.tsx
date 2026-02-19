@@ -3,85 +3,66 @@
 import { useEffect, useState } from "react";
 import CommonDashboard from "@/app/components/ui/dashboard";
 import { Overview, RecentRequest } from "@/app/types/dashboard";
+import { User } from "@/app/types/user";
+import SkeletonCard from "@/app/components/ui/skeletoncard";
+import CustomError from "@/app/components/ui/error";
 
 export default function TechnicianDashboardPage() {
-    const [overview, setOverview] = useState<Overview>({
-        total: 0,
-        pending: 0,
-        in_progress: 0,
-        completed: 0,
-        approved: 0,
-    });
+  const [overview, setOverview] = useState<Overview | null>(null);
+  const [requests, setRequests] = useState<RecentRequest[]>([]);
+  const [user, setUser] = useState<User | null>(null);
 
-    const [requests, setRequests] = useState<RecentRequest[]>([]);
-    const [userName, setUserName] = useState<string>("");
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
-    useEffect(() => {
-        fetch("/api/technician/overview")
-            .then(res => res.json())
-            .then(setOverview);
+  async function fetchJson<T>(url: string): Promise<T> {
+    const res = await fetch(url);
+    if (!res.ok) {
+      throw new Error(`${url} failed with status ${res.status}`);
+    }
+    return res.json();
+  }
 
-        fetch("/api/technician/assigned-requests")
-            .then(res => res.json())
-            .then(setRequests);
+  useEffect(() => {
+    const fetchData = async () => {
+      setLoading(true);
+      setError(null);
 
-        fetch("/api/auth/current-user")
-            .then(res => res.json())
-            .then(data => setUserName(data.user.fullname || "Technician"));
-    }, []);
+      try {
+        const [overviewData, requests, userData] = await Promise.all([
+          fetchJson<Overview>("/api/technician/overview"),
+          fetchJson<RecentRequest[]>("/api/technician/assigned-requests"),
+          fetchJson<{ user: User | null }>("/api/auth/current-user"),
+        ]);
 
-    return (
-        <CommonDashboard<RecentRequest>
-            title={<div className="flex w-full items-center">Hello, {userName}</div>}
-            tableTitle="Assigned Requests"
-            overview={overview}
-            tableData={requests}
-            tableColumns={["no", "title", "type", "priority"]}
-            tableRowKey="service_request_id"
-        // tableRowActions={[
-        //     {
-        //         name: "Actions",
-        //         render: (row: any) => {
-        //             const status = row.status.toLowerCase();
-        //             return (
-        //                 <div className="flex gap-2">
-        //                     {status === "approved" && (
-        //                         <button
-        //                             className="bg-blue-600 text-white px-3 py-1 rounded hover:bg-blue-700 transition"
-        //                             onClick={e => {
-        //                                 e.stopPropagation();
-        //                             }}
-        //                         >
-        //                             Start Work
-        //                         </button>
-        //                     )}
-        //                     {status === "in progress" && (
-        //                         <>
-        //                             <button
-        //                                 className="bg-green-600 text-white px-3 py-1 rounded hover:bg-green-700 transition"
-        //                                 onClick={e => {
-        //                                     e.stopPropagation();
-        //                                     // mark as completed
-        //                                 }}
-        //                             >
-        //                                 Complete
-        //                             </button>
-        //                             <button
-        //                                 className="bg-yellow-600 text-white px-3 py-1 rounded hover:bg-yellow-700 transition"
-        //                                 onClick={e => {
-        //                                     e.stopPropagation();
-        //                                     // request reassignment
-        //                                 }}
-        //                             >
-        //                                 Reassign
-        //                             </button>
-        //                         </>
-        //                     )}
-        //                 </div>
-        //             );
-        //         },
-        //     },
-        // ]}
-        />
-    );
+        setOverview(overviewData);
+        setRequests(requests);
+        setUser(userData.user ?? null);
+      } catch (err: any) {
+        console.error(err);
+        setError(err.message || "Failed to fetch data");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchData();
+  }, []);
+
+  if (loading) return <SkeletonCard />;
+  if (error) return <CustomError message="Could not fetch data" />;
+  if (!overview || !requests || !user)
+    return <CustomError message="Data not available" />;
+
+  return (
+    <CommonDashboard<RecentRequest>
+      user={user}
+      title={<span>Hello, {user.fullname}</span>}
+      tableTitle="Assigned Requests"
+      overview={overview}
+      tableData={requests}
+      tableColumns={["no", "title", "type", "priority"]}
+      tableRowKey="service_request_id"
+    />
+  );
 }

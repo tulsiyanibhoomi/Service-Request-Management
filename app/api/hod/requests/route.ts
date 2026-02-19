@@ -3,79 +3,85 @@ import { prisma } from "@/app/lib/prisma";
 import { NextResponse } from "next/server";
 
 export async function GET() {
-    try {
-        const user = await getCurrentUser();
+  try {
+    const user = await getCurrentUser();
 
-        const HOD_ID = user.userid;
+    const HOD_ID = user.userid;
 
-        const hodDept = await prisma.service_dept_person.findFirst({
-            where: {
-                userid: HOD_ID,
-                is_hod: true,
-            },
-            select: {
-                service_dept_id: true,
-            },
-        });
+    const hodDept = await prisma.service_dept_person.findFirst({
+      where: {
+        userid: HOD_ID,
+        is_hod: true,
+      },
+      select: {
+        service_dept_id: true,
+      },
+    });
 
-        const requests = await prisma.service_request.findMany({
-            where: {
-                service_request_type: {
-                    dept_id: hodDept?.service_dept_id,
-                },
+    const requests = await prisma.service_request.findMany({
+      where: {
+        service_request_type: {
+          dept_id: hodDept?.service_dept_id,
+        },
+      },
+      orderBy: {
+        submitted_at: "desc",
+      },
+      select: {
+        service_request_id: true,
+        service_request_no: true,
+        service_request_title: true,
+        priority_level: true,
+        service_request_status: {
+          select: {
+            service_request_status_name: true,
+          },
+        },
+        service_request_type: {
+          select: {
+            service_type_name: true,
+          },
+        },
+        technician: {
+          select: {
+            technician_id: true,
+            users: {
+              select: {
+                userid: true,
+                username: true,
+                fullname: true,
+              },
             },
-            orderBy: {
-                created: "desc",
-            },
-            select: {
-                service_request_id: true,
-                service_request_no: true,
-                service_request_title: true,
-                priority_level: true,
-                service_request_status: {
-                    select: {
-                        service_request_status_name: true,
-                    },
-                },
-                service_request_type: {
-                    select: {
-                        service_type_name: true,
-                    },
-                },
-                technician: {
-                    select: {
-                        technician_id: true,
-                        users: {
-                            select: {
-                                userid: true,
-                                username: true,
-                                fullname: true
-                            }
-                        }
-                    }
-                },
-            },
-        });
+          },
+        },
+      },
+    });
 
-        const formatted = requests.map((req) => ({
-            service_request_id: req.service_request_id,
-            no: req.service_request_no,
-            title: req.service_request_title,
-            type: req.service_request_type.service_type_name,
-            priority: req.priority_level,
-            status: req.service_request_status.service_request_status_name,
-            assigned_to:
-                req.service_request_status.service_request_status_name === "In Progress"
-                    ? req.technician?.users.fullname ?? "-"
-                    : "-",
-        }));
+    const formatted = requests.map((req) => {
+      const status = req.service_request_status.service_request_status_name;
 
-        return NextResponse.json(formatted);
-    } catch (err) {
-        console.error("HOD Requests API error:", err);
-        return NextResponse.json(
-            { message: "Failed to load HOD requests" },
-            { status: 500 }
-        );
-    }
+      const shouldShowTechnician =
+        status !== "Declined" && status !== "Cancelled" && status !== "Closed";
+
+      return {
+        service_request_id: req.service_request_id,
+        no: req.service_request_no,
+        title: req.service_request_title,
+        type: req.service_request_type.service_type_name,
+        priority: req.priority_level,
+        status,
+        assigned_to: shouldShowTechnician
+          ? (req.technician?.users.fullname ?? "-")
+          : "-",
+      };
+    });
+
+    return NextResponse.json(formatted);
+  } catch (err) {
+    console.error("HOD Requests API error:", err);
+    return NextResponse.json(
+      { message: "Failed to load HOD requests" },
+      { status: 500 },
+    );
+  }
 }

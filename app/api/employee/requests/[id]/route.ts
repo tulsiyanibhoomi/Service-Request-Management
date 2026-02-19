@@ -39,7 +39,7 @@ export async function GET(req: Request, context: { params: { id: string } }) {
 
     const statusHistory = await prisma.service_request_status_history.findMany({
       where: { request_id: Number(id) },
-      orderBy: { changed_at: "desc" },
+      orderBy: { changed_at: "asc" },
       include: {
         service_request_status: {
           select: { service_request_status_name: true },

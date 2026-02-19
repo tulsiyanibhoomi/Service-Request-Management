@@ -2,52 +2,64 @@
 
 import { useEffect, useState } from "react";
 import CommonDashboard from "@/app/components/ui/dashboard";
+import SkeletonCard from "@/app/components/ui/skeletoncard";
+import CustomError from "@/app/components/ui/error";
 import { Overview, RecentRequest } from "@/app/types/dashboard";
-import Link from "next/link";
-import { ROUTES } from "@/app/config/routes";
+import { User } from "@/app/types/user";
 
 export default function EmployeeDashboardPage() {
-  const [overview, setOverview] = useState<Overview>({
-    total: 0,
-    pending: 0,
-    approved: 0,
-    in_progress: 0,
-    completed: 0,
-  });
+  const [overview, setOverview] = useState<Overview | null>(null);
+  const [recentRequests, setRecentRequests] = useState<RecentRequest[] | null>(
+    null,
+  );
+  const [user, setUser] = useState<User | null>(null);
 
-  const [recentRequests, setRecentRequests] = useState<RecentRequest[]>([]);
-  const [userName, setUserName] = useState<string>("");
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  async function fetchJson<T>(url: string): Promise<T> {
+    const res = await fetch(url);
+    if (!res.ok) {
+      throw new Error(`${url} failed with status ${res.status}`);
+    }
+    return res.json();
+  }
 
   useEffect(() => {
-    fetch("/api/employee/overview")
-      .then((res) => res.json())
-      .then(setOverview);
+    const fetchData = async () => {
+      setLoading(true);
+      setError(null);
 
-    fetch("/api/employee/recent-requests")
-      .then((res) => res.json())
-      .then(setRecentRequests);
+      try {
+        const [overviewData, recentData, userData] = await Promise.all([
+          fetchJson<Overview>("/api/employee/overview"),
+          fetchJson<RecentRequest[]>("/api/employee/recent-requests"),
+          fetchJson<{ user: User | null }>("/api/auth/current-user"),
+        ]);
 
-    fetch("/api/auth/current-user")
-      .then((res) => res.json())
-      .then((data) => setUserName(data.user.fullname || "User"));
+        setOverview(overviewData);
+        setRecentRequests(recentData);
+        setUser(userData.user ?? null);
+      } catch (err: any) {
+        console.error(err);
+        setError(err.message || "Failed to fetch data");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchData();
   }, []);
+
+  if (loading) return <SkeletonCard />;
+  if (error) return <CustomError message="Could not fetch data" />;
+  if (!overview || !recentRequests || !user)
+    return <CustomError message="Data not available" />;
 
   return (
     <CommonDashboard<RecentRequest>
-      title={
-        <div className="flex w-full items-center">
-          <span>Hello, {userName}</span>
-          <div className="flex-1 flex justify-end">
-            <Link
-              href={ROUTES.RAISEREQUEST}
-              className="px-4 py-2 bg-blue-600 text-white rounded-full shadow hover:bg-blue-700 transition text-lg"
-              style={{ fontWeight: "normal" }}
-            >
-              Raise a request
-            </Link>
-          </div>
-        </div>
-      }
+      user={user}
+      title={<span>Hello, {user.fullname}</span>}
       overview={overview}
       tableData={recentRequests}
       tableColumns={["no", "title", "type", "priority", "status"]}

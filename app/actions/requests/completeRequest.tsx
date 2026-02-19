@@ -33,15 +33,23 @@ export async function completeServiceRequest({
 
     if (!technician) throw new Error("Technician not found");
 
-    await prisma.service_request.update({
-      where: { service_request_id: requestId },
-      data: {
-        service_request_status_id: completedStatus.service_request_status_id,
-        service_request_status_datetime: new Date(),
-        service_request_status_by_user_id: technicianId,
-        service_request_status_description: comment,
-        modified: new Date(),
-      },
+    await prisma.$transaction(async (tx) => {
+      await tx.service_request.update({
+        where: { service_request_id: requestId },
+        data: {
+          service_request_status_id: completedStatus.service_request_status_id,
+        },
+      });
+
+      await tx.service_request_status_history.create({
+        data: {
+          request_id: requestId,
+          status_id: completedStatus.service_request_status_id,
+          changed_at: new Date(),
+          changed_by_user_id: technicianId,
+          notes: comment,
+        },
+      });
     });
 
     revalidatePath("/technician/requests");

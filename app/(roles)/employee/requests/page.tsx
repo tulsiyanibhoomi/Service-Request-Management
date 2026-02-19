@@ -1,19 +1,39 @@
 "use client";
+
 import deleteRequest from "@/app/actions/requests/deleteRequest";
-import Table from "@/app/components/ui/table";
+import Table from "@/app/components/ui/table/table";
 import { ROUTES } from "@/app/config/routes";
 import { ServiceRequest } from "@/app/types/requests";
 import Link from "next/link";
 import { useEffect, useState } from "react";
+import SkeletonCard from "@/app/components/ui/skeletoncard";
+import CustomError from "@/app/components/ui/error";
 
 export default function EmployeeRequests() {
   const [requests, setRequests] = useState<ServiceRequest[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(false);
 
   useEffect(() => {
-    fetch("/api/employee/requests")
-      .then((res) => res.json())
-      .then(setRequests);
+    async function fetchRequests() {
+      try {
+        const res = await fetch("/api/employee/requests");
+        if (!res.ok) throw new Error(`Failed to fetch: ${res.status}`);
+        const data = await res.json();
+        setRequests(data);
+      } catch (err) {
+        console.error(err);
+        setError(true);
+      } finally {
+        setLoading(false);
+      }
+    }
+
+    fetchRequests();
   }, []);
+
+  if (loading) return <SkeletonCard />;
+  if (error) return <CustomError message="Could not fetch requests" />;
 
   return (
     <div className="p-6 bg-gray-50 min-h-screen">

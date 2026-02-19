@@ -13,16 +13,13 @@ import TechnicianActions from "./actions/technicianactions";
 import HODAdminActions from "./actions/hodadminactions";
 import RequestAttachments from "./details_parts/requestattachments";
 import EmployeeActions from "./actions/employeeactions";
+import { HodAction, TechnicianAction } from "@/app/types/role_actions";
 
 interface RequestDetailsProps {
   data: ServiceRequest;
   backLink?: string;
   role: "Employee" | "HOD" | "Admin" | "Technician";
 }
-
-type HodAction = "Approve" | "Decline" | "Close" | "Reassign";
-type TechnicianAction = "Start" | "Complete" | "Reassign";
-type EmployeeActions = "Modify" | "Cancel";
 
 export default function RequestDetails({
   data,
@@ -78,20 +75,20 @@ export default function RequestDetails({
 
         <div className="space-y-6">
           <RequestStatus data={data} />
-
-          {canDecide && (
+          {!noAction && canDecide && (
             <HODAdminActions data={data} onAction={handleHODAdminAction} />
           )}
-
-          {role === "Employee" && !noAction && <EmployeeActions data={data} />}
-
-          {role === "Technician" && (
+          {!noAction && role === "Employee" && <EmployeeActions data={data} />}
+          {!noAction && role === "Technician" && (
             <TechnicianActions data={data} onAction={handleTechnicianAction} />
           )}
-
-          {!isPending && <RequestAssignment data={data} />}
-
-          <RequestTimeStamps data={data} />
+          {!isPending && role !== "Technician" && (
+            <RequestAssignment data={data} />
+          )}
+          {data.status_history &&
+            Object.keys(data.status_history).length > 0 && (
+              <RequestTimeStamps data={data} />
+            )}{" "}
         </div>
       </div>
 
@@ -109,7 +106,7 @@ export default function RequestDetails({
           currentStatus={
             data.status as "Approved" | "In Progress" | "Completed" | "Closed"
           }
-          action={technicianAction || "Complete"}
+          action={technicianAction ?? "Complete"}
           onClose={() => setTechnicianModalOpen(false)}
         />
       )}

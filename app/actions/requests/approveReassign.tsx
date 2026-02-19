@@ -4,21 +4,21 @@ import { prisma } from "@/app/lib/prisma";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 
-interface ApproveRequestInput {
+interface ApproveReassignmentInput {
   requestId: number;
-  technicianId: number;
   hodId: number;
+  technicianId: number;
   comment?: string;
 }
 
-export async function approveServiceRequest({
+export async function approveReassignment({
   requestId,
-  technicianId,
   hodId,
+  technicianId,
   comment,
-}: ApproveRequestInput) {
+}: ApproveReassignmentInput) {
   try {
-    if (!technicianId) throw new Error("Technician must be selected");
+    if (!hodId) throw new Error("HOD ID not provided");
     if (!requestId) throw new Error("Request ID is required");
 
     const approvedStatus = await prisma.service_request_status.findFirst({
@@ -55,6 +55,8 @@ export async function approveServiceRequest({
           assigned_to_technician_id: technicianId,
           assigned_by_user_id: hodId,
           service_request_status_id: approvedStatus.service_request_status_id,
+          reassignment_requested: false,
+          reassignment_requested_reason: null,
         },
       });
 
@@ -71,14 +73,14 @@ export async function approveServiceRequest({
           status_id: approvedStatus.service_request_status_id,
           changed_by_user_id: hodId,
           changed_at: now,
-          notes: comment ?? null,
+          notes: comment?.trim() || "Request reassigned",
         },
       });
     });
 
     revalidatePath("/hod/requests");
   } catch (error) {
-    console.error("Error approving request:", error);
+    console.error("Error request reassignment:", error);
   }
   redirect("/hod/requests");
 }

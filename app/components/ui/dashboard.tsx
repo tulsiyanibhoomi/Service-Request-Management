@@ -1,8 +1,8 @@
 import { Overview } from "@/app/types/dashboard";
-import Table from "./table";
+import Table from "./table/table";
 import Link from "next/link";
-import { useEffect, useState } from "react";
 import { ROUTES } from "@/app/config/routes";
+import { User } from "@/app/types/user";
 
 type TableAction<T> = {
   name: string;
@@ -10,6 +10,7 @@ type TableAction<T> = {
 };
 
 type Props<T> = {
+  user: User;
   title: React.ReactNode;
   tableTitle?: string;
   overview: Overview;
@@ -20,6 +21,7 @@ type Props<T> = {
 };
 
 export default function CommonDashboard<T>({
+  user,
   title,
   tableTitle,
   overview,
@@ -41,6 +43,11 @@ export default function CommonDashboard<T>({
       color: "bg-purple-100 text-purple-800",
     },
     {
+      key: "assigned",
+      title: "Assigned",
+      color: "bg-purple-100 text-purple-800",
+    },
+    {
       key: "in_progress",
       title: "In Progress",
       color: "bg-red-100 text-red-800",
@@ -59,25 +66,11 @@ export default function CommonDashboard<T>({
       value: overview[card.key as keyof Overview] as number,
     }));
 
-  const [user, setUser] = useState(null);
-  const [redirectURL, setRedirectURL] = useState("/requests");
-
-  useEffect(() => {
-    fetch("/api/auth/current-user")
-      .then((res) => res.json())
-      .then((data) => {
-        setUser(data.user);
-
-        if (data.user?.role) {
-          const roleKey = data.user.role.toLowerCase();
-          const url = (ROUTES.REQUEST_ROUTES as Record<string, string>)[
-            roleKey
-          ];
-          setRedirectURL(url);
-        }
-      })
-      .catch((err) => console.error("Failed to fetch current user:", err));
-  }, []);
+  const redirectURL = user?.role
+    ? ((ROUTES.REQUEST_ROUTES as Record<string, string>)[
+        user.role.toLowerCase()
+      ] ?? "/requests")
+    : "/requests";
 
   return (
     <div className="p-6 bg-gray-50 min-h-screen">

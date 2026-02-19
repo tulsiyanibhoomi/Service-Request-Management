@@ -18,7 +18,15 @@ const FileUploader: React.FC<FileUploaderProps> = ({
 }) => {
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (!e.target.files) return;
-    onAddNew(Array.from(e.target.files));
+    let files = Array.from(e.target.files);
+
+    const invalidFiles = files.filter((f) => f.size > 10 * 1024 * 1024); // >10MB
+    if (invalidFiles.length > 0) {
+      alert("Some files exceed 10MB and will not be added.");
+      files = files.filter((f) => f.size <= 10 * 1024 * 1024);
+    }
+
+    if (files.length > 0) onAddNew(files);
     e.target.value = "";
   };
 

@@ -4,55 +4,53 @@ import { prisma } from "@/app/lib/prisma";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 
-interface DeclineRequestInput {
+interface DeclineReassignmentInput {
   requestId: number;
   hodId: number;
-  comment: string;
+  comment?: string;
 }
 
-export async function declineServiceRequest({
+export async function declineReassignment({
   requestId,
   hodId,
   comment,
-}: DeclineRequestInput) {
+}: DeclineReassignmentInput) {
   try {
+    if (!hodId) throw new Error("HOD ID not provided");
     if (!requestId) throw new Error("Request ID is required");
-    if (!comment || comment.trim() === "") {
-      throw new Error("Comment is required to decline the request");
-    }
 
-    const declinedStatus = await prisma.service_request_status.findFirst({
-      where: { service_request_status_name: "Declined" },
+    const request = await prisma.service_request.findUnique({
+      where: { service_request_id: requestId },
     });
 
-    if (!declinedStatus) {
-      throw new Error('"Declined" status not found in database');
-    }
+    if (!request) throw new Error("Service request not found");
 
     const now = new Date();
 
     await prisma.$transaction(async (tx) => {
-      await prisma.service_request.update({
+      await tx.service_request.update({
         where: { service_request_id: requestId },
         data: {
-          service_request_status_id: declinedStatus.service_request_status_id,
+          reassignment_requested: false,
+          reassignment_requested_reason: null,
         },
       });
 
       await tx.service_request_status_history.create({
         data: {
           request_id: requestId,
-          status_id: declinedStatus.service_request_status_id,
+          status_id: request.service_request_status_id,
           changed_by_user_id: hodId,
           changed_at: now,
-          notes: comment,
+          notes: comment?.trim() || "Reassignment request declined",
         },
       });
     });
 
     revalidatePath("/hod/requests");
   } catch (error) {
-    console.error("Error declining request:", error);
+    console.error("Error declining reassignment:", error);
   }
+
   redirect("/hod/requests");
 }
