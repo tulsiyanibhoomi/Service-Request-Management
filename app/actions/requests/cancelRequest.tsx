@@ -3,6 +3,7 @@
 import { getCurrentUser } from "@/app/lib/auth";
 import { prisma } from "@/app/lib/prisma";
 import { revalidatePath } from "next/cache";
+import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 
 interface CancelRequestInput {
@@ -14,6 +15,8 @@ export async function cancelServiceRequest({
   requestId,
   reason,
 }: CancelRequestInput) {
+  const cookieStore = await cookies();
+
   try {
     if (!requestId) throw new Error("Request ID is required");
     if (!reason || reason.trim() === "") {
@@ -59,9 +62,36 @@ export async function cancelServiceRequest({
       });
     });
 
-    revalidatePath("/employee/requests");
+    cookieStore.set({
+      name: "flashMessage",
+      value: "Request cancelled successfully!",
+      path: "/",
+      maxAge: 5,
+    });
+
+    cookieStore.set({
+      name: "flashType",
+      value: "info",
+      path: "/",
+      maxAge: 5,
+    });
   } catch (error) {
     console.error("Error cancelling request:", error);
+    cookieStore.set({
+      name: "flashMessage",
+      value: "Something went wrong while cancelling request",
+      path: "/",
+      maxAge: 5,
+    });
+
+    cookieStore.set({
+      name: "flashType",
+      value: "error",
+      path: "/",
+      maxAge: 5,
+    });
+    throw error;
   }
+  revalidatePath("/employee/requests");
   redirect("/employee/requests");
 }

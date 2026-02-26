@@ -7,6 +7,7 @@ import { useRequestFormData } from "./use-form-data";
 import FileUploader from "./file-upload";
 import SkeletonCard from "@/app/components/ui/skeletoncard";
 import CustomError from "@/app/components/ui/error";
+import { Input, Select, TextArea } from "./form-utils";
 
 const NewRequest = () => {
   const [removedFiles, setRemovedFiles] = useState<string[]>([]);
@@ -204,14 +205,22 @@ const NewRequest = () => {
             ]}
             error={fieldErrors.urgency}
           />
+          <div className="my-1">
+            <label className="block font-semibold text-gray-700">
+              Attachments
+            </label>
+          </div>
           <FileUploader
             existingFiles={formData.existingFiles}
             newFiles={formData.newFiles}
             onAddNew={(files: any) =>
-              setFormData((prev: any) => ({
-                ...prev,
-                newFiles: [...prev.newFiles, ...files],
-              }))
+              setFormData((prev: any) => {
+                const combined = [...prev.newFiles, ...files];
+                return {
+                  ...prev,
+                  newFiles: combined.slice(0, 5 - prev.existingFiles.length),
+                };
+              })
             }
             onRemoveExisting={handleRemoveExisting}
             onRemoveNew={handleRemoveNew}
@@ -240,56 +249,3 @@ const NewRequest = () => {
 };
 
 export default NewRequest;
-
-const Input = ({ label, error, ...props }: any) => (
-  <div className="flex flex-col">
-    <label className="font-semibold text-gray-700 mb-1">{label}</label>
-    <input
-      {...props}
-      className={`border p-3 rounded-lg focus:ring-2 focus:outline-none ${
-        error
-          ? "border-red-500 focus:ring-red-400"
-          : "border-gray-300 focus:ring-blue-400"
-      } bg-gray-100`}
-    />
-    {error && <span className="text-red-500 text-sm mt-1">{error}</span>}
-  </div>
-);
-
-const TextArea = ({ label, error, ...props }: any) => (
-  <div className="flex flex-col">
-    <label className="font-semibold text-gray-700 mb-1">{label}</label>
-    <textarea
-      {...props}
-      rows={6}
-      className={`border p-3 rounded-lg focus:ring-2 focus:outline-none ${
-        error
-          ? "border-red-500 focus:ring-red-400"
-          : "border-gray-300 focus:ring-blue-400"
-      }`}
-    />
-    {error && <span className="text-red-500 text-sm mt-1">{error}</span>}
-  </div>
-);
-
-const Select = ({ label, options, error, ...props }: any) => (
-  <div className="flex flex-col">
-    <label className="font-semibold text-gray-700 mb-1">{label}</label>
-    <select
-      {...props}
-      className={`border p-3 rounded-lg focus:ring-2 focus:outline-none ${
-        error
-          ? "border-red-500 focus:ring-red-400"
-          : "border-gray-300 focus:ring-blue-400"
-      }`}
-    >
-      <option value="">Select</option>
-      {options.map((opt: any) => (
-        <option key={opt.value} value={opt.value}>
-          {opt.label}
-        </option>
-      ))}
-    </select>
-    {error && <span className="text-red-500 text-sm mt-1">{error}</span>}
-  </div>
-);

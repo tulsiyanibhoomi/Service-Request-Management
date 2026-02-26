@@ -23,12 +23,10 @@ export const useRequestFormData = () => {
       setError(null);
 
       try {
-        // Fetch current user
         const res = await fetch("/api/auth/current-user");
         if (!res.ok) throw new Error("Failed to fetch current user");
         const { user } = await res.json();
 
-        // Fetch request types
         const typeRes = await fetch("/api/request-types/type-names");
         if (!typeRes.ok) throw new Error("Failed to fetch request types");
         const types = await typeRes.json();

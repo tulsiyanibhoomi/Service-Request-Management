@@ -8,6 +8,7 @@ import Link from "next/link";
 import { useEffect, useState } from "react";
 import SkeletonCard from "@/app/components/ui/skeletoncard";
 import CustomError from "@/app/components/ui/error";
+import { notify } from "@/app/utils/notify";
 
 export default function EmployeeRequests() {
   const [requests, setRequests] = useState<ServiceRequest[]>([]);
@@ -28,7 +29,6 @@ export default function EmployeeRequests() {
         setLoading(false);
       }
     }
-
     fetchRequests();
   }, []);
 

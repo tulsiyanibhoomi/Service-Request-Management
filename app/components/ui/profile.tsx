@@ -60,8 +60,8 @@ export default function UserProfile({ userId }: { userId?: string }) {
     fetchUser();
   }, [userId]);
 
-  if (loading) return <SkeletonCard />; // consistent loading
-  if (error) return <CustomError message={error} />; // consistent error handling
+  if (loading) return <SkeletonCard />;
+  if (error) return <CustomError message={error} />;
 
   return (
     <div className="max-w-5xl mx-auto p-6 bg-gray-50 min-h-screen">
