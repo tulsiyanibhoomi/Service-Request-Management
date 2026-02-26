@@ -1,15 +1,13 @@
-import { logout } from "@/app/lib/auth"
-import { NextResponse } from "next/server"
+import { NextResponse } from "next/server";
 
 export async function POST() {
-    try {
-        await logout()
-        return NextResponse.json({ success: true })
-    } catch (error) {
-        console.error("signup error: ", error)
-        return NextResponse.json(
-            { error: "Internal server error" },
-            { status: 500 }
-        )
-    }
+  const response = NextResponse.json({ success: true });
+
+  response.cookies.set("token", "", {
+    httpOnly: true,
+    expires: new Date(0),
+    path: "/",
+  });
+
+  return response;
 }

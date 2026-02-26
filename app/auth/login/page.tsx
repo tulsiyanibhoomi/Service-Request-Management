@@ -1,7 +1,6 @@
 "use client";
 
 import { ROUTES } from "@/app/config/routes";
-import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { FiEye, FiEyeOff } from "react-icons/fi";
@@ -92,20 +91,18 @@ export default function LoginPage() {
 
         <button
           type="submit"
-          className={`w-full bg-blue-600 text-white py-3 mt-5 rounded-xl font-semibold shadow transition 
-    ${loading ? "bg-blue-400 cursor-not-allowed" : "hover:bg-blue-700"}`}
           disabled={loading}
+          className={`w-full py-3 mt-5 rounded-xl font-semibold shadow transition
+          ${
+            loading
+              ? "bg-blue-400 opacity-70 cursor-not-allowed pointer-events-none"
+              : "bg-blue-600 hover:bg-blue-700 text-white"
+          }
+          `}
         >
           {loading ? "Logging in..." : "Login"}
         </button>
       </form>
-
-      <p className="mt-6 text-gray-600 text-center">
-        Don't have an account?{" "}
-        <Link href={ROUTES.SIGNUP} className="text-blue-600 hover:underline">
-          Sign Up
-        </Link>
-      </p>
     </>
   );
 }

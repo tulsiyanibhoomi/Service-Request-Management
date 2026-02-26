@@ -1,104 +1,87 @@
-import { NextRequest, NextResponse } from "next/server"
-import { getIronSession } from "iron-session"
-import { sessionOptions, SessionData } from "@/app/lib/auth"
-import type { IronSession } from "iron-session"
-import { cookies } from "next/headers"
+import { NextRequest, NextResponse } from "next/server";
+import { verifyToken } from "@/app/lib/jwt";
 
-export async function proxy(req: NextRequest) {
+export function proxy(req: NextRequest) {
+  const PUBLIC_ROUTES = ["/", "/auth/login"];
+  const AUTH_PAGES = ["/auth/login"];
 
-    const PUBLIC_ROUTES = ["/", "/auth/login", "/auth/signup"]
-    const AUTH_PAGES = ["/auth/login", "/auth/signup"]
+  const path = req.nextUrl.pathname;
 
-    let session: IronSession<SessionData> | null = null
+  const token = req.cookies.get("token")?.value;
 
-    try {
-        const cookieStore = await cookies()
-        session = await getIronSession<SessionData>(
-            cookieStore,
-            sessionOptions
-        )
-    } catch (err) {
-        console.error("Session error", err)
+  const payload = token ? verifyToken(token) : null;
+
+  const role = payload?.role?.toLowerCase();
+
+  if (!payload && PUBLIC_ROUTES.includes(path)) {
+    return NextResponse.next();
+  }
+
+  if (payload && (AUTH_PAGES.includes(path) || path === "/")) {
+    const url = req.nextUrl.clone();
+
+    switch (role) {
+      case "admin":
+        url.pathname = "/admin/dashboard";
+        break;
+      case "employee":
+        url.pathname = "/employee/dashboard";
+        break;
+      case "hod":
+        url.pathname = "/hod/dashboard";
+        break;
+      case "technician":
+        url.pathname = "/technician/dashboard";
+        break;
+      default:
+        url.pathname = "/";
     }
 
-    const path = req.nextUrl.pathname
-    const role = session?.role?.toLowerCase()
+    return NextResponse.redirect(url);
+  }
 
-    if (!session?.isLoggedIn && PUBLIC_ROUTES.includes(path)) {
-        return NextResponse.next()
-    }
+  if (!payload) {
+    const url = req.nextUrl.clone();
+    url.pathname = "/auth/login";
 
-    if (session?.isLoggedIn && (AUTH_PAGES.includes(path) || path === "/")) {
-        const url = req.nextUrl.clone()
+    const res = NextResponse.redirect(url);
+    res.cookies.set({
+      name: "flashMessage",
+      value: "You must login to access this page",
+      maxAge: 10,
+      httpOnly: false,
+      path: "/",
+    });
 
-        switch (role) {
-            case "admin":
-                url.pathname = "/admin/dashboard"
-                break
-            case "employee":
-                url.pathname = "/employee/dashboard"
-                break
-            case "hod":
-                url.pathname = "/hod/dashboard"
-                break
-            case "technician":
-                url.pathname = "/technician/dashboard"
-                break
-            default:
-                url.pathname = "/"
-        }
+    return res;
+  }
 
-        return NextResponse.redirect(url)
-    }
+  if (path.startsWith("/admin") && role !== "admin") {
+    return NextResponse.rewrite(new URL("/403", req.url));
+  }
 
-    if (!session?.isLoggedIn) {
-        const url = req.nextUrl.clone()
-        url.pathname = "/auth/login"
-        const res = NextResponse.redirect(url)
-        res.cookies.set({
-            name: "flashMessage",
-            value: "You must login to access this page",
-            maxAge: 10,
-            httpOnly: false,
-            path: "/",
-        })
-        return res
-    }
+  if (path.startsWith("/employee") && role !== "employee") {
+    return NextResponse.rewrite(new URL("/403", req.url));
+  }
 
-    if (path.startsWith("/admin") && role !== "admin") {
-        const url = req.nextUrl.clone()
-        url.pathname = "/403"
-        return NextResponse.rewrite(url)
-    }
+  if (path.startsWith("/hod") && role !== "hod") {
+    return NextResponse.rewrite(new URL("/403", req.url));
+  }
 
-    if (path.startsWith("/employee") && role !== "employee") {
-        const url = req.nextUrl.clone()
-        url.pathname = "/403"
-        return NextResponse.rewrite(url)
-    }
+  if (path.startsWith("/technician") && role !== "technician") {
+    return NextResponse.rewrite(new URL("/403", req.url));
+  }
 
-    if (path.startsWith("/hod") && role !== "hod") {
-        const url = req.nextUrl.clone()
-        url.pathname = "/403"
-        return NextResponse.rewrite(url)
-    }
-
-    if (path.startsWith("/technician") && role !== "technician") {
-        const url = req.nextUrl.clone()
-        url.pathname = "/403"
-        return NextResponse.rewrite(url)
-    }
-
-    return NextResponse.next()
+  return NextResponse.next();
 }
 
 export const config = {
-    matcher: [
-        "/",
-        "/auth/:path*",
-        "/admin/:path*",
-        "/employee/:path*",
-        "/hod/:path*",
-        "/technician/:path*"
-    ],
-}
+  matcher: [
+    "/",
+    "/auth/:path*",
+    "/admin/:path*",
+    "/employee/:path*",
+    "/hod/:path*",
+    "/technician/:path*",
+  ],
+};
