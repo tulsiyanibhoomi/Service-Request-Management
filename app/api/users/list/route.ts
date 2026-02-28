@@ -4,13 +4,7 @@ import { NextResponse } from "next/server";
 export async function GET() {
   try {
     const users = await prisma.users.findMany({
-      select: {
-        userid: true,
-        fullname: true,
-        email: true,
-        isactive: true,
-        created: true,
-        modified: true,
+      include: {
         user_role: {
           select: {
             role: {
@@ -20,6 +14,9 @@ export async function GET() {
             },
           },
         },
+      },
+      where: {
+        isactive: true,
       },
     });
 

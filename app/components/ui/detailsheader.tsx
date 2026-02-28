@@ -8,7 +8,7 @@ type Props = {
   onDelete: () => void;
 };
 
-export default function DepartmentHeader({ name, onEdit, onDelete }: Props) {
+export default function DetailsHeader({ name, onEdit, onDelete }: Props) {
   return (
     <div className="bg-gradient-to-r from-blue-600 to-indigo-600 text-white p-6 rounded-xl shadow-lg flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-6">
       <div>

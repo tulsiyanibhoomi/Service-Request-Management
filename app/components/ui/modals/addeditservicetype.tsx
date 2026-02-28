@@ -28,7 +28,6 @@ export default function AddEditServiceTypeModal({
   const [description, setDescription] = useState("");
   const [error, setError] = useState("");
 
-  // Populate state when editing
   useEffect(() => {
     if (initialData) {
       setName(initialData.name);
@@ -110,7 +109,7 @@ export default function AddEditServiceTypeModal({
                       value={name}
                       onChange={(e) => {
                         setName(e.target.value);
-                        if (error) setError(""); // clear error
+                        if (error) setError("");
                       }}
                       placeholder="Enter service type name"
                       className={`w-full rounded-lg border px-3 py-2 text-gray-700 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 sm:text-sm ${

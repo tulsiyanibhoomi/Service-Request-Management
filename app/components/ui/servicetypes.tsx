@@ -2,8 +2,8 @@
 
 import { useState } from "react";
 import { FaPlus, FaEdit, FaTimes } from "react-icons/fa";
-import ConfirmDeleteModal from "@/app/components/ui/deleteconfirm";
-import AddEditServiceTypeModal from "./addeditservicetype";
+import ConfirmDeleteModal from "@/app/components/ui/modals/deleteconfirm";
+import AddEditServiceTypeModal from "./modals/addeditservicetype";
 import addServiceType from "@/app/actions/service-types/addType";
 import editServiceType from "@/app/actions/service-types/editType";
 

@@ -2,7 +2,7 @@
 
 import { ReactNode, useEffect, useState } from "react";
 import toast, { Toaster } from "react-hot-toast";
-import ConfirmDeleteModal from "@/app/components/ui/deleteconfirm";
+import ConfirmDeleteModal from "@/app/components/ui/modals/deleteconfirm";
 import { useRouter } from "next/navigation";
 import TableRow from "./table_row";
 

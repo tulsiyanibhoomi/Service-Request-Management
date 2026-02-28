@@ -3,12 +3,19 @@ import { NextResponse } from "next/server";
 
 export async function GET() {
   try {
-    const status = await prisma.service_request_status.findMany();
+    const status = await prisma.service_request_status.findMany({
+      include: {
+        _count: {
+          select: { service_request: true },
+        },
+      },
+    });
 
     const data = status.map((r) => ({
-      service_request_status_id: r.service_request_status_id,
+      id: r.service_request_status_id,
       status_name: r.service_request_status_name,
       description: r.description,
+      request_count: r._count.service_request,
     }));
 
     return NextResponse.json(data);

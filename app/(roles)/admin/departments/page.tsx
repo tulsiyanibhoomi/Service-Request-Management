@@ -6,7 +6,7 @@ import addDepartment from "@/app/actions/departments/addDepartment";
 import Table from "@/app/components/ui/table/table";
 import SkeletonCard from "@/app/components/ui/skeletoncard";
 import CustomError from "@/app/components/ui/error";
-import AddEditDeptModal from "@/app/components/ui/addeditdept";
+import AddEditDeptModal from "@/app/components/ui/modals/addeditdept";
 
 type Department = {
   service_dept_id: number;

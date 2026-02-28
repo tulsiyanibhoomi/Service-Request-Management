@@ -12,14 +12,14 @@ import {
   FaInfoCircle,
 } from "react-icons/fa";
 
-import DepartmentHeader from "@/app/components/ui/detailsheader";
 import InfoCard from "@/app/components/ui/detailsinfocard";
 import ServiceTypes from "@/app/components/ui/servicetypes";
-import ConfirmDeleteModal from "@/app/components/ui/deleteconfirm";
+import ConfirmDeleteModal from "@/app/components/ui/modals/deleteconfirm";
 import deleteServiceType from "@/app/actions/service-types/deleteType";
-import AddEditDeptModal from "@/app/components/ui/addeditdept";
+import AddEditDeptModal from "@/app/components/ui/modals/addeditdept";
 import editServiceDepartment from "@/app/actions/departments/editDepartment";
 import deleteDepartment from "@/app/actions/departments/deleteDepartment";
+import DetailsHeader from "@/app/components/ui/detailsheader";
 
 type ServiceType = {
   id: number;
@@ -96,7 +96,7 @@ export default function DepartmentDetailPage() {
 
   return (
     <div className="p-6 max-w-6xl mx-auto">
-      <DepartmentHeader
+      <DetailsHeader
         name={department.service_dept_name}
         onEdit={handleEdit}
         onDelete={() => setIsDeleteOpen(true)}

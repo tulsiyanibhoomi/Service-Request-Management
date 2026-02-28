@@ -17,6 +17,15 @@ export default async function deleteRequestStatus(
       };
     }
 
+    if (
+      fallbackStatus.service_request_status_id === service_request_status_id
+    ) {
+      return {
+        success: false,
+        message: "Default status cannot be deleted.",
+      };
+    }
+
     await prisma.$transaction(async (tx) => {
       await tx.service_request.updateMany({
         where: { service_request_status_id },
@@ -30,7 +39,7 @@ export default async function deleteRequestStatus(
       });
     });
 
-    revalidatePath("/request-status");
+    revalidatePath("/admin/request-status");
 
     return { success: true };
   } catch (error) {
