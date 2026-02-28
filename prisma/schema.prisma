@@ -38,7 +38,6 @@ model users {
   created                          DateTime?                          @default(now()) @db.Timestamp(0)
   modified                         DateTime?                          @default(now()) @db.Timestamp(0)
   salt                             String                             @default("mysaltvalue") @db.VarChar(255)
-  service_dept                     service_dept[]
   service_dept_person              service_dept_person[]
   service_request                  service_request[]
   service_request_reply            service_request_reply[]
@@ -52,17 +51,13 @@ model service_dept {
   service_dept_id     Int                   @id @default(autoincrement())
   service_dept_name   String                @db.VarChar(250)
   description         String?               @db.VarChar(250)
-  userid              Int
   created             DateTime              @db.DateTime(0)
   modified            DateTime              @db.DateTime(0)
   cc_email_to_csv     String?               @db.VarChar(250)
   isactive            Boolean               @default(true)
-  users               users                 @relation(fields: [userid], references: [userid], onDelete: NoAction, onUpdate: NoAction, map: "service_dept_ibfk_1")
   service_dept_person service_dept_person[]
   service_type        service_type[]
   technician          technician[]
-
-  @@index([userid], map: "userid")
 }
 
 model service_dept_person {
@@ -169,6 +164,7 @@ model service_type {
   created           DateTime          @db.DateTime(0)
   modified          DateTime          @db.DateTime(0)
   dept_id           Int
+  isactive          Boolean?          @default(true)
   service_request   service_request[]
   service_dept      service_dept      @relation(fields: [dept_id], references: [service_dept_id], onDelete: NoAction, onUpdate: NoAction, map: "service_type_ibfk_2")
 

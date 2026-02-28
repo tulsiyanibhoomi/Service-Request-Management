@@ -1,19 +1,15 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getSession } from "@/app/lib/auth";
+import { getCurrentUser } from "@/app/lib/auth";
 
 export async function GET(req: NextRequest) {
   try {
-    const session = await getSession();
+    const user = await getCurrentUser();
 
-    if (!session || !session.isLoggedIn) {
+    if (!user) {
       return NextResponse.json({ user: null }, { status: 200 });
     }
 
-    const { id, fullname, username, email, role } = session;
-
-    return NextResponse.json({
-      user: { id, fullname, username, email, role },
-    });
+    return NextResponse.json({ user }, { status: 200 });
   } catch (err) {
     console.error("current-user API error:", err);
     return NextResponse.json(

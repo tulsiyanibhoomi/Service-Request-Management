@@ -12,7 +12,7 @@ interface CurrentUser {
   email: string;
   fullname: string;
   username: string;
-  role: "admin" | "employee" | "hod";
+  role: "admin" | "employee" | "hod" | "technician";
 }
 
 export default function RolesLayout({

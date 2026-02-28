@@ -2,46 +2,7 @@ import { promisify } from "util";
 import { prisma } from "./prisma";
 import crypto from "crypto";
 import { cookies } from "next/headers";
-import { getIronSession } from "iron-session";
-
-export async function login(email: string, password: string) {
-  try {
-    const user = await prisma.users.findUnique({
-      where: { email },
-      include: {
-        user_role: {
-          include: {
-            role: true,
-          },
-        },
-      },
-    });
-
-    if (!user) {
-      return { success: false, error: "Email doesn't exist" };
-    }
-
-    const isValid = await verifyPassword(password, user.password, user.salt);
-
-    if (!isValid) return { success: false, error: "Invalid credentials" };
-
-    const roleName = user.user_role[0]?.role.rolename;
-
-    return {
-      success: true,
-      user: {
-        id: user.userid,
-        fullname: user.fullname,
-        username: user.username,
-        email: user.email,
-        role: roleName,
-      },
-    };
-  } catch (error) {
-    console.error("Sign in error: ", error);
-    return { success: false, error: "Failed to sign in" };
-  }
-}
+import { signToken, verifyToken } from "./jwt";
 
 const scryptAsync = promisify(crypto.scrypt);
 const KEY_LENGTH = 64;
@@ -64,57 +25,108 @@ export async function hashPassword(password: string) {
   return { salt, hash: derivedKey.toString("hex") };
 }
 
-export type SessionData = {
-  id?: number;
-  email?: string;
-  fullname?: string;
-  username?: string;
-  role?: string;
-  isLoggedIn: boolean;
-};
+export async function login(email: string, password: string) {
+  try {
+    const user = await prisma.users.findUnique({
+      where: { email },
+      include: {
+        user_role: {
+          include: {
+            role: true,
+          },
+        },
+      },
+    });
 
-export const sessionOptions = {
-  password: process.env.SESSION_PASSWORD!,
-  cookieName: "auth-session",
-  cookieOptions: {
-    secure: process.env.NODE_ENV === "production",
-    httpOnly: true,
-    sameSite: "lax",
-    maxAge: 60 * 60 * 24 * 7,
-  },
-};
+    if (!user) {
+      return { success: false, error: "Email doesn't exist" };
+    }
 
-export async function getSession() {
-  const cookieStore = await cookies();
-  const session = await getIronSession<SessionData>(
-    cookieStore,
-    sessionOptions,
-  );
+    const isValid = await verifyPassword(password, user.password, user.salt);
 
-  if (!session.isLoggedIn) {
-    session.isLoggedIn = false;
+    if (!isValid) return { success: false, error: "Invalid credentials" };
+
+    const roleName = user.user_role[0]?.role.rolename || "user";
+
+    const token = signToken({
+      id: user.userid,
+      email: user.email,
+      role: roleName,
+    });
+
+    const cookieStore = await cookies();
+    cookieStore.set({
+      name: "token",
+      value: token,
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      sameSite: "lax",
+      maxAge: 60 * 60 * 24 * 7,
+    });
+
+    return {
+      success: true,
+      user: {
+        id: user.userid,
+        fullname: user.fullname,
+        username: user.username,
+        email: user.email,
+        role: roleName,
+      },
+    };
+  } catch (error) {
+    console.error("Sign in error: ", error);
+    return { success: false, error: "Failed to sign in" };
   }
-
-  return session;
 }
 
 export async function logout() {
-  const session = await getSession();
-  session.destroy();
+  const cookieStore = await cookies();
+  cookieStore.set({
+    name: "token",
+    value: "",
+    httpOnly: true,
+    secure: process.env.NODE_ENV === "production",
+    sameSite: "lax",
+    maxAge: 0,
+  });
 }
 
 export async function getCurrentUser() {
-  const session: SessionData = await getSession();
+  const token = (await cookies()).get("token")?.value;
 
-  if (!session.isLoggedIn || !session.id) {
+  if (!token) {
     throw new Error("Unauthorized");
   }
 
+  const payload = verifyToken(token);
+
+  if (!payload) {
+    throw new Error("Invalid token");
+  }
+
+  const user = await prisma.users.findUnique({
+    where: { userid: payload.id },
+    include: {
+      user_role: {
+        include: {
+          role: true,
+        },
+      },
+    },
+  });
+
+  if (!user) {
+    throw new Error("User not found");
+  }
+
+  const roleName = user.user_role[0]?.role.rolename || "user";
+
   return {
-    userid: session.id,
-    email: session.email,
-    fullname: session.fullname,
-    username: session.username,
-    role: session.role,
+    id: user.userid,
+    fullname: user.fullname,
+    username: user.username,
+    email: user.email,
+    role: roleName,
   };
 }
