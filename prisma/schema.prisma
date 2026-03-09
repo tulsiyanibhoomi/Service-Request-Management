@@ -29,22 +29,21 @@ model user_role {
 }
 
 model users {
-  userid                           Int                                @id @default(autoincrement())
-  username                         String                             @unique(map: "username") @db.VarChar(50)
-  fullname                         String                             @db.VarChar(100)
-  email                            String                             @unique(map: "email") @db.VarChar(100)
-  password                         String                             @db.VarChar(255)
-  isactive                         Boolean?                           @default(true)
-  created                          DateTime?                          @default(now()) @db.Timestamp(0)
-  modified                         DateTime?                          @default(now()) @db.Timestamp(0)
-  salt                             String                             @default("mysaltvalue") @db.VarChar(255)
-  service_dept_person              service_dept_person[]
-  service_request                  service_request[]
-  service_request_reply            service_request_reply[]
-  service_request_status_history   service_request_status_history[]
-  service_request_type_wise_person service_request_type_wise_person[]
-  technician                       technician?
-  user_role                        user_role[]
+  userid                         Int                              @id @default(autoincrement())
+  username                       String                           @unique(map: "username") @db.VarChar(50)
+  fullname                       String                           @db.VarChar(100)
+  email                          String                           @unique(map: "email") @db.VarChar(100)
+  password                       String                           @db.VarChar(255)
+  isactive                       Boolean?                         @default(true)
+  created                        DateTime?                        @default(now()) @db.Timestamp(0)
+  modified                       DateTime?                        @default(now()) @db.Timestamp(0)
+  salt                           String                           @default("mysaltvalue") @db.VarChar(255)
+  service_dept_person            service_dept_person?
+  service_request                service_request[]
+  service_request_reply          service_request_reply[]
+  service_request_status_history service_request_status_history[]
+  technician                     technician?
+  user_role                      user_role[]
 }
 
 model service_dept {
@@ -65,15 +64,12 @@ model service_dept_person {
   service_dept_id        Int
   from_date              DateTime     @db.DateTime(0)
   to_date                DateTime?    @db.DateTime(0)
-  userid                 Int
-  created                DateTime     @db.DateTime(0)
-  modified               DateTime     @db.DateTime(0)
+  userid                 Int          @unique(map: "uniq_userid")
   is_hod                 Boolean?
   service_dept           service_dept @relation(fields: [service_dept_id], references: [service_dept_id], onDelete: NoAction, onUpdate: NoAction, map: "service_dept_person_ibfk_1")
   users                  users        @relation(fields: [userid], references: [userid], onDelete: NoAction, onUpdate: NoAction, map: "service_dept_person_ibfk_2")
 
   @@index([service_dept_id], map: "service_dept_id")
-  @@index([userid], map: "userid")
 }
 
 model service_request {
@@ -139,22 +135,6 @@ model service_request_status {
   service_request                service_request[]
   service_request_reply          service_request_reply[]
   service_request_status_history service_request_status_history[]
-}
-
-model service_request_type_wise_person {
-  service_request_type_wise_person_id Int       @id @default(autoincrement())
-  service_request_type_id             Int
-  staff_id                            Int
-  from_date                           DateTime  @db.DateTime(0)
-  to_date                             DateTime? @db.DateTime(0)
-  description                         String?   @db.VarChar(250)
-  userid                              Int
-  created                             DateTime  @db.DateTime(0)
-  modified                            DateTime  @db.DateTime(0)
-  users                               users     @relation(fields: [userid], references: [userid], onDelete: NoAction, onUpdate: NoAction, map: "service_request_type_wise_person_ibfk_2")
-
-  @@index([service_request_type_id], map: "service_request_type_id")
-  @@index([userid], map: "userid")
 }
 
 model service_type {

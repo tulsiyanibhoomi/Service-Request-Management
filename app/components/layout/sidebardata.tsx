@@ -26,19 +26,6 @@ export const menuItemsByRole: Record<string, MenuItem[]> = {
       icon: <FiActivity />,
     },
 
-    // {
-    //   name: "Masters",
-    //   icon: <FiDatabase />,
-    //   subItems: [
-    //     { name: "Status Master", path: "/admin/masters/service-status", icon: <FiActivity /> },
-    //     { name: "Department Master", path: "/admin/masters/departments", icon: <FiGrid /> },
-    //     { name: "Department Person Master", path: "/admin/masters/department-person", icon: <FiUsers /> },
-    //     { name: "Service Type Master", path: "/admin/masters/service-types", icon: <FiDatabase /> },
-    //     { name: "Request Type Master", path: "/admin/masters/request-type", icon: <FiDatabase /> },
-    //     { name: "Request Type-Person Mapping", path: "/admin/masters/requesttype-person", icon: <FiUsers /> },
-    //   ],
-    // },
-
     {
       name: "Departments",
       path: "/admin/departments",
@@ -55,6 +42,7 @@ export const menuItemsByRole: Record<string, MenuItem[]> = {
   HOD: [
     { name: "Dashboard", path: "/hod/dashboard", icon: <FiHome /> },
     { name: "Requests", path: "/hod/requests", icon: <FiFolder /> },
+    { name: "Technicians", path: "/hod/technicians", icon: <FiUsers /> },
   ],
 
   Technician: [

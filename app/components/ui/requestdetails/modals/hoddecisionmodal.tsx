@@ -6,9 +6,9 @@ import { formatDate } from "@/app/components/utils/styles";
 import { approveServiceRequest } from "@/app/actions/requests/approveRequest";
 import { closeServiceRequest } from "@/app/actions/requests/closeRequest";
 import { declineServiceRequest } from "@/app/actions/requests/declineRequest";
-import { TechnicianSelect } from "../../technicianselect";
-import SkeletonCard from "@/app/components/ui/skeletoncard";
-import CustomError from "@/app/components/ui/error";
+import { TechnicianSelect } from "../../../utils/technicianselect";
+import SkeletonCard from "@/app/components/utils/skeletoncard";
+import CustomError from "@/app/components/utils/error";
 import { approveReassignment } from "@/app/actions/requests/approveReassign";
 import { declineReassignment } from "@/app/actions/requests/declineReassign";
 

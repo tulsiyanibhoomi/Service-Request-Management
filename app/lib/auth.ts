@@ -113,6 +113,14 @@ export async function getCurrentUser() {
           role: true,
         },
       },
+      service_dept_person: {
+        where: {
+          is_hod: true,
+        },
+        select: {
+          service_dept_id: true,
+        },
+      },
     },
   });
 
@@ -122,11 +130,13 @@ export async function getCurrentUser() {
 
   const roleName = user.user_role[0]?.role.rolename || "user";
 
+  const departmentId = user.service_dept_person?.service_dept_id || null;
   return {
     id: user.userid,
     fullname: user.fullname,
     username: user.username,
     email: user.email,
     role: roleName,
+    departmentId,
   };
 }

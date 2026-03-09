@@ -5,8 +5,8 @@ import addRequest from "@/app/actions/requests/addRequest";
 import editRequest from "@/app/actions/requests/editRequest";
 import { useRequestFormData } from "./use-form-data";
 import FileUploader from "./file-upload";
-import SkeletonCard from "@/app/components/ui/skeletoncard";
-import CustomError from "@/app/components/ui/error";
+import SkeletonCard from "@/app/components/utils/skeletoncard";
+import CustomError from "@/app/components/utils/error";
 import { Input, Select, TextArea } from "./form-utils";
 
 const NewRequest = () => {

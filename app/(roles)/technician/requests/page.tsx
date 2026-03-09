@@ -3,8 +3,8 @@
 import { useEffect, useState } from "react";
 import deleteRequest from "@/app/actions/requests/deleteRequest";
 import Table from "@/app/components/ui/table/table";
-import SkeletonCard from "@/app/components/ui/skeletoncard";
-import CustomError from "@/app/components/ui/error";
+import SkeletonCard from "@/app/components/utils/skeletoncard";
+import CustomError from "@/app/components/utils/error";
 import { ServiceRequest } from "@/app/types/requests";
 
 export default function TechnicianRequests() {

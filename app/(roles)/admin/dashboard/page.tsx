@@ -1,9 +1,9 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import CommonDashboard from "@/app/components/ui/dashboard";
-import SkeletonCard from "@/app/components/ui/skeletoncard";
-import CustomError from "@/app/components/ui/error";
+import CommonDashboard from "@/app/components/utils/dashboard";
+import SkeletonCard from "@/app/components/utils/skeletoncard";
+import CustomError from "@/app/components/utils/error";
 import { Overview, RecentRequest } from "@/app/types/dashboard";
 import { User } from "@/app/types/user";
 

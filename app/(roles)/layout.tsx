@@ -3,9 +3,10 @@
 import { useEffect, useState } from "react";
 import Sidebar from "../components/layout/sidebar";
 import { usePathname, useRouter } from "next/navigation";
-import SkeletonCard from "@/app/components/ui/skeletoncard";
-import CustomError from "@/app/components/ui/error";
+import SkeletonCard from "@/app/components/utils/skeletoncard";
+import CustomError from "@/app/components/utils/error";
 import { notify } from "../utils/notify";
+import ConfirmLogoutModal from "@/app/components/ui/modals/logoutconfirm";
 
 interface CurrentUser {
   id: string;
@@ -23,6 +24,7 @@ export default function RolesLayout({
   const [user, setUser] = useState<CurrentUser | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [isLogoutOpen, setIsLogoutOpen] = useState(false); // modal state
   const router = useRouter();
 
   async function fetchJson<T>(url: string): Promise<T> {
@@ -41,15 +43,11 @@ export default function RolesLayout({
       const message = decodeURIComponent(messageMatch[1]);
       const type = typeMatch ? typeMatch[1] : "success";
 
-      if (type === "error") {
-        notify.error(message);
-      } else if (type === "info") {
-        notify.info(message);
-      } else if (type === "warning") {
-        notify.warning(message);
-      } else {
-        notify.success(message);
-      }
+      if (type === "error") notify.error(message);
+      else if (type === "info") notify.info(message);
+      else if (type === "warning") notify.warning(message);
+      else notify.success(message);
+
       document.cookie = "flashMessage=; max-age=0; path=/";
       document.cookie = "flashType=; max-age=0; path=/";
     }
@@ -115,14 +113,14 @@ export default function RolesLayout({
           </button>
           <div className="font-medium text-gray-700">{user.fullname}</div>
           <button
-            onClick={handleLogout}
+            onClick={() => setIsLogoutOpen(true)}
             className="px-3 py-1 rounded bg-red-500 text-white hover:bg-red-600 transition"
           >
             Logout
           </button>
         </div>
       </header>
-
+      ={" "}
       <div className="flex">
         <aside className="fixed top-14 left-0 h-[calc(100vh-56px)] w-64 bg-white shadow-md flex flex-col">
           <Sidebar role={user.role} />
@@ -132,6 +130,11 @@ export default function RolesLayout({
           {children}
         </main>
       </div>
+      <ConfirmLogoutModal
+        isOpen={isLogoutOpen}
+        onClose={() => setIsLogoutOpen(false)}
+        onConfirm={handleLogout}
+      />
     </div>
   );
 }

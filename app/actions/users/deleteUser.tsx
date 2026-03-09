@@ -28,8 +28,17 @@ export default async function deleteUser(userid: number) {
           where: { userid },
           data: { isactive: false },
         });
+        if (hasDeptPerson) {
+          await tx.service_dept_person.update({
+            where: {
+              service_dept_person_id: hasDeptPerson.service_dept_person_id,
+            },
+            data: { to_date: new Date() },
+          });
+        }
       } else {
         await tx.users.delete({ where: { userid } });
+        await tx.service_dept_person.deleteMany({ where: { userid } });
       }
     });
   } catch (error) {

@@ -14,7 +14,7 @@ export default async function addRequest(formData: FormData) {
 
     if (!user) throw new Error("User not logged in");
 
-    const employee_id = user.userid;
+    const employee_id = user.id;
 
     const now = new Date();
 

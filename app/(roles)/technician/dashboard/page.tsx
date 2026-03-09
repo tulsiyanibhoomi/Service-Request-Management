@@ -1,11 +1,11 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import CommonDashboard from "@/app/components/ui/dashboard";
+import CommonDashboard from "@/app/components/utils/dashboard";
 import { Overview, RecentRequest } from "@/app/types/dashboard";
 import { User } from "@/app/types/user";
-import SkeletonCard from "@/app/components/ui/skeletoncard";
-import CustomError from "@/app/components/ui/error";
+import SkeletonCard from "@/app/components/utils/skeletoncard";
+import CustomError from "@/app/components/utils/error";
 
 export default function TechnicianDashboardPage() {
   const [overview, setOverview] = useState<Overview | null>(null);

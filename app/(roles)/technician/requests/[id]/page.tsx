@@ -4,8 +4,8 @@ import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
 import RequestDetails from "@/app/components/ui/requestdetails/requestdetails";
 import { ServiceRequest } from "@/app/types/requests";
-import SkeletonCard from "@/app/components/ui/skeletoncard";
-import CustomError from "@/app/components/ui/error";
+import SkeletonCard from "@/app/components/utils/skeletoncard";
+import CustomError from "@/app/components/utils/error";
 
 export default function TechnicianRequestDetailsPage() {
   const { id } = useParams();

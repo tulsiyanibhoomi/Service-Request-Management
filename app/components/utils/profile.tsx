@@ -1,8 +1,8 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import SkeletonCard from "@/app/components/ui/skeletoncard";
-import CustomError from "@/app/components/ui/error";
+import SkeletonCard from "@/app/components/utils/skeletoncard";
+import CustomError from "@/app/components/utils/error";
 
 export type UserStats = {
   projects?: number;

@@ -23,7 +23,7 @@ export default function Requests() {
 
   const fetchStatus = async () => {
     try {
-      const res = await fetch("/api/request-status/list");
+      const res = await fetch("/api/request-status");
       const data = await res.json();
       setStatus(data);
     } catch (err) {

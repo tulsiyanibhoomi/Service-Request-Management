@@ -2,8 +2,8 @@
 
 import { useEffect, useState } from "react";
 import Table from "@/app/components/ui/table/table";
-import SkeletonCard from "@/app/components/ui/skeletoncard";
-import CustomError from "@/app/components/ui/error";
+import SkeletonCard from "@/app/components/utils/skeletoncard";
+import CustomError from "@/app/components/utils/error";
 import { useRouter } from "next/navigation";
 
 type User = {
@@ -39,7 +39,7 @@ export default function Users() {
     setLoading(true);
     setError(null);
     try {
-      const data = await fetchJson<User[]>("/api/users/list");
+      const data = await fetchJson<User[]>("/api/users");
       setUsers(data);
     } catch (err: any) {
       console.error(err);
@@ -51,7 +51,7 @@ export default function Users() {
 
   const fetchRoles = async () => {
     try {
-      const data = await fetchJson<Role[]>("/api/roles/list");
+      const data = await fetchJson<Role[]>("/api/roles");
       setRoles(data);
     } catch (err) {
       console.error("Failed to fetch roles", err);

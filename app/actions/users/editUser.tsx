@@ -1,17 +1,22 @@
 "use server";
 
 import { prisma } from "@/app/lib/prisma";
-import bcrypt from "bcryptjs";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
+import addTechnician from "../technician/addTechnician";
+import editTechnician from "../technician/editTechnician";
+import addDeptPerson from "../dept-person/addDeptPerson";
+import editDeptPerson from "../dept-person/editDeptPerson";
 
 interface EditUserData {
   userid: number;
   username: string;
   fullName: string;
   email: string;
-  password?: string;
   role: string;
+  maxRequestsAllowed?: number;
+  serviceDeptId?: number;
+  password?: string;
 }
 
 export default async function editUser({
@@ -19,54 +24,82 @@ export default async function editUser({
   username,
   fullName,
   email,
-  password,
   role,
+  maxRequestsAllowed,
+  serviceDeptId,
 }: EditUserData) {
   try {
-    const existingUser = await prisma.users.findFirst({
-      where: {
-        OR: [{ username }, { email }],
-        NOT: { userid },
-      },
-    });
+    await prisma.$transaction(async (tx) => {
+      const existingUser = await tx.users.findFirst({
+        where: {
+          OR: [{ username }, { email }],
+          NOT: { userid },
+        },
+      });
+      if (existingUser) {
+        throw new Error("Username or email already exists");
+      }
 
-    if (existingUser) {
-      throw new Error("Username or email already exists");
-    }
+      const dataToUpdate: any = {
+        username,
+        fullname: fullName,
+        email,
+        isactive: true,
+      };
 
-    const dataToUpdate: any = {
-      username,
-      fullname: fullName,
-      email,
-      isactive: true,
-    };
+      await tx.users.update({
+        where: { userid },
+        data: dataToUpdate,
+      });
 
-    if (password?.trim()) {
-      dataToUpdate.password = await bcrypt.hash(password, 10);
-    }
+      await tx.user_role.deleteMany({ where: { userid } });
 
-    await prisma.users.update({
-      where: { userid },
-      data: dataToUpdate,
-    });
+      const roleRecord = await tx.role.findUnique({
+        where: { rolename: role },
+      });
+      if (!roleRecord) throw new Error("Role not found");
 
-    await prisma.user_role.deleteMany({
-      where: { userid },
-    });
+      await tx.user_role.create({
+        data: {
+          userid,
+          roleid: roleRecord.roleid,
+        },
+      });
 
-    const roleRecord = await prisma.role.findUnique({
-      where: { rolename: role },
-    });
+      if (role.toLowerCase() === "technician") {
+        const existingTech = await tx.technician.findUnique({
+          where: { technician_id: userid },
+        });
 
-    if (!roleRecord) {
-      throw new Error("Role not found");
-    }
-
-    await prisma.user_role.create({
-      data: {
-        userid,
-        roleid: roleRecord.roleid,
-      },
+        if (existingTech) {
+          await editTechnician({
+            userid,
+            tx,
+            maxRequestsAllowed: maxRequestsAllowed ?? 10,
+            serviceDeptId: serviceDeptId ?? 1,
+          });
+          await editDeptPerson({
+            userid,
+            tx,
+            serviceDeptId: serviceDeptId ?? 1,
+            isHod: false,
+          });
+        } else {
+          await addTechnician({
+            userid,
+            tx,
+            maxRequestsAllowed: maxRequestsAllowed ?? 10,
+            serviceDeptId: serviceDeptId ?? 1,
+          });
+          await addDeptPerson({
+            userid,
+            tx,
+            serviceDeptId: serviceDeptId ?? 1,
+            fromDate: new Date(),
+            isHod: false,
+          });
+        }
+      }
     });
   } catch (err) {
     console.error("Edit user failed:", err);

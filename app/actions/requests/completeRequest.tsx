@@ -2,6 +2,7 @@
 
 import { prisma } from "@/app/lib/prisma";
 import { revalidatePath } from "next/cache";
+import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 
 interface CompleteRequestInput {
@@ -15,6 +16,8 @@ export async function completeServiceRequest({
   technicianId,
   comment,
 }: CompleteRequestInput) {
+  const cookieStore = await cookies();
+
   try {
     if (!technicianId) throw new Error("Technician must be selected");
     if (!requestId) throw new Error("Request ID is required");
@@ -51,10 +54,36 @@ export async function completeServiceRequest({
         },
       });
     });
+    cookieStore.set({
+      name: "flashMessage",
+      value: "Request completed successfully!",
+      path: "/",
+      maxAge: 5,
+    });
+
+    cookieStore.set({
+      name: "flashType",
+      value: "info",
+      path: "/",
+      maxAge: 5,
+    });
 
     revalidatePath("/technician/requests");
   } catch (error) {
     console.error("Error approving request:", error);
+    cookieStore.set({
+      name: "flashMessage",
+      value: "Something went wrong while completing request",
+      path: "/",
+      maxAge: 5,
+    });
+
+    cookieStore.set({
+      name: "flashType",
+      value: "error",
+      path: "/",
+      maxAge: 5,
+    });
   }
   redirect("/technician/requests");
 }

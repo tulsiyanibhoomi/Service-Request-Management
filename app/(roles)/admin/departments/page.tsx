@@ -4,8 +4,8 @@ import { useEffect, useState } from "react";
 import deleteDepartment from "@/app/actions/departments/deleteDepartment";
 import addDepartment from "@/app/actions/departments/addDepartment";
 import Table from "@/app/components/ui/table/table";
-import SkeletonCard from "@/app/components/ui/skeletoncard";
-import CustomError from "@/app/components/ui/error";
+import SkeletonCard from "@/app/components/utils/skeletoncard";
+import CustomError from "@/app/components/utils/error";
 import AddEditDeptModal from "@/app/components/ui/modals/addeditdept";
 
 type Department = {
@@ -37,7 +37,7 @@ export default function Departments() {
     setLoading(true);
     setError(null);
     try {
-      const data = await fetchJson<Department[]>("/api/departments/list");
+      const data = await fetchJson<Department[]>("/api/departments");
       setDepartments(data);
     } catch (err: any) {
       console.error(err);

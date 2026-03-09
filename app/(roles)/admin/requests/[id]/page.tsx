@@ -4,6 +4,8 @@ import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
 import RequestDetails from "@/app/components/ui/requestdetails/requestdetails";
 import { ServiceRequest } from "@/app/types/requests";
+import SkeletonCard from "@/app/components/utils/skeletoncard";
+import CustomError from "@/app/components/utils/error";
 
 export default function AdminRequestDetailsPage() {
   const { id } = useParams();
@@ -27,8 +29,8 @@ export default function AdminRequestDetailsPage() {
     fetchData();
   }, [id]);
 
-  if (loading) return <p className="text-center mt-10">Loading...</p>;
-  if (!data) return <p className="text-center mt-10">Request not found</p>;
+  if (loading) return <SkeletonCard />;
+  if (!data) return <CustomError message="Could not fetch request details" />;
 
   return (
     <RequestDetails data={data} backLink="/admin/requests" role={"Admin"} />

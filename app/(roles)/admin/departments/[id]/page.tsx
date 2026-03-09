@@ -2,8 +2,8 @@
 
 import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
-import SkeletonCard from "@/app/components/ui/skeletoncard";
-import CustomError from "@/app/components/ui/error";
+import SkeletonCard from "@/app/components/utils/skeletoncard";
+import CustomError from "@/app/components/utils/error";
 import { formatDate } from "@/app/components/utils/styles";
 import {
   FaUserTie,
@@ -12,14 +12,14 @@ import {
   FaInfoCircle,
 } from "react-icons/fa";
 
-import InfoCard from "@/app/components/ui/detailsinfocard";
+import InfoCard from "@/app/components/ui/admin-details/detailsinfocard";
 import ServiceTypes from "@/app/components/ui/servicetypes";
 import ConfirmDeleteModal from "@/app/components/ui/modals/deleteconfirm";
 import deleteServiceType from "@/app/actions/service-types/deleteType";
 import AddEditDeptModal from "@/app/components/ui/modals/addeditdept";
 import editServiceDepartment from "@/app/actions/departments/editDepartment";
 import deleteDepartment from "@/app/actions/departments/deleteDepartment";
-import DetailsHeader from "@/app/components/ui/detailsheader";
+import DetailsHeader from "@/app/components/ui/admin-details/detailsheader";
 
 type ServiceType = {
   id: number;

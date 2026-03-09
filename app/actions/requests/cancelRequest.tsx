@@ -41,7 +41,7 @@ export async function cancelServiceRequest({
 
     if (!user) throw new Error("User not logged in");
 
-    const employee_id = user.userid;
+    const employee_id = user.id;
 
     await prisma.$transaction(async (tx) => {
       await tx.service_request.update({

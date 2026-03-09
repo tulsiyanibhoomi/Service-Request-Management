@@ -2,6 +2,7 @@
 
 import { prisma } from "@/app/lib/prisma";
 import { revalidatePath } from "next/cache";
+import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 
 interface DeclineRequestInput {
@@ -15,6 +16,8 @@ export async function declineServiceRequest({
   hodId,
   comment,
 }: DeclineRequestInput) {
+  const cookieStore = await cookies();
+
   try {
     if (!requestId) throw new Error("Request ID is required");
     if (!comment || comment.trim() === "") {
@@ -50,9 +53,36 @@ export async function declineServiceRequest({
       });
     });
 
+    cookieStore.set({
+      name: "flashMessage",
+      value: "Request declined successfully!",
+      path: "/",
+      maxAge: 5,
+    });
+
+    cookieStore.set({
+      name: "flashType",
+      value: "info",
+      path: "/",
+      maxAge: 5,
+    });
+
     revalidatePath("/hod/requests");
   } catch (error) {
     console.error("Error declining request:", error);
+    cookieStore.set({
+      name: "flashMessage",
+      value: "Something went wrong while declining request",
+      path: "/",
+      maxAge: 5,
+    });
+
+    cookieStore.set({
+      name: "flashType",
+      value: "error",
+      path: "/",
+      maxAge: 5,
+    });
   }
   redirect("/hod/requests");
 }

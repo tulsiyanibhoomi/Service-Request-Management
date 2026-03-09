@@ -2,6 +2,7 @@
 
 import { prisma } from "@/app/lib/prisma";
 import { revalidatePath } from "next/cache";
+import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 
 interface ApproveReassignmentInput {
@@ -17,6 +18,7 @@ export async function approveReassignment({
   technicianId,
   comment,
 }: ApproveReassignmentInput) {
+  const cookieStore = await cookies();
   try {
     if (!hodId) throw new Error("HOD ID not provided");
     if (!requestId) throw new Error("Request ID is required");
@@ -76,11 +78,37 @@ export async function approveReassignment({
           notes: comment?.trim() || "Request reassigned",
         },
       });
+      cookieStore.set({
+        name: "flashMessage",
+        value: "Request reassigned successfully!",
+        path: "/",
+        maxAge: 5,
+      });
+
+      cookieStore.set({
+        name: "flashType",
+        value: "success",
+        path: "/",
+        maxAge: 5,
+      });
     });
 
     revalidatePath("/hod/requests");
   } catch (error) {
     console.error("Error request reassignment:", error);
+    cookieStore.set({
+      name: "flashMessage",
+      value: "Something went wrong while reassigning request",
+      path: "/",
+      maxAge: 5,
+    });
+
+    cookieStore.set({
+      name: "flashType",
+      value: "error",
+      path: "/",
+      maxAge: 5,
+    });
   }
   redirect("/hod/requests");
 }

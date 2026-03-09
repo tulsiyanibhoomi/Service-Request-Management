@@ -3,8 +3,8 @@
 import { useEffect, useState } from "react";
 import deleteRequest from "@/app/actions/requests/deleteRequest";
 import Table from "@/app/components/ui/table/table";
-import SkeletonCard from "@/app/components/ui/skeletoncard";
-import CustomError from "@/app/components/ui/error";
+import SkeletonCard from "@/app/components/utils/skeletoncard";
+import CustomError from "@/app/components/utils/error";
 import { ServiceRequest } from "@/app/types/requests";
 
 export default function HODRequests() {
@@ -24,9 +24,7 @@ export default function HODRequests() {
       setError(null);
 
       try {
-        const data = await fetchJson<ServiceRequest[]>(
-          "/api/hod/requests"
-        );
+        const data = await fetchJson<ServiceRequest[]>("/api/hod/requests");
         setRequests(data);
       } catch (err: any) {
         console.error(err);
@@ -47,9 +45,7 @@ export default function HODRequests() {
     <div className="p-6 bg-gray-50 min-h-screen">
       <div className="bg-white p-6 rounded-xl shadow">
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-4 gap-4">
-          <h2 className="text-2xl font-semibold text-gray-800">
-            Requests
-          </h2>
+          <h2 className="text-2xl font-semibold text-gray-800">Requests</h2>
         </div>
 
         <div className="overflow-x-auto">
@@ -64,9 +60,7 @@ export default function HODRequests() {
               "assigned_to",
             ]}
             rowKey="service_request_id"
-            rowClickRoute={(row) =>
-              `/hod/requests/${row.service_request_id}`
-            }
+            rowClickRoute={(row) => `/hod/requests/${row.service_request_id}`}
             onDelete={deleteRequest}
           />
         </div>

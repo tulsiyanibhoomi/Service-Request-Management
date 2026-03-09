@@ -1,5 +1,5 @@
 import { Overview } from "@/app/types/dashboard";
-import Table from "./table/table";
+import Table from "../ui/table/table";
 import Link from "next/link";
 import { ROUTES } from "@/app/config/routes";
 import { User } from "@/app/types/user";

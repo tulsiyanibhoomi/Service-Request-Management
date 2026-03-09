@@ -6,7 +6,7 @@ export async function GET() {
   try {
     const user = await getCurrentUser();
 
-    const HOD_ID = user.userid;
+    const HOD_ID = user.id;
 
     const hodDept = await prisma.service_dept_person.findFirst({
       where: {

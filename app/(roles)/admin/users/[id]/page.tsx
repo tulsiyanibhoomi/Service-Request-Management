@@ -2,15 +2,38 @@
 
 import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
-import SkeletonCard from "@/app/components/ui/skeletoncard";
-import CustomError from "@/app/components/ui/error";
+import SkeletonCard from "@/app/components/utils/skeletoncard";
+import CustomError from "@/app/components/utils/error";
 import { formatDate } from "@/app/components/utils/styles";
-import { FaUser, FaIdBadge, FaCalendarAlt, FaUserCog } from "react-icons/fa";
+import {
+  FaUser,
+  FaIdBadge,
+  FaCalendarAlt,
+  FaUserCog,
+  FaChartBar,
+} from "react-icons/fa";
 
-import InfoCard from "@/app/components/ui/detailsinfocard";
+import InfoCard from "@/app/components/ui/admin-details/detailsinfocard";
 import ConfirmDeleteModal from "@/app/components/ui/modals/deleteconfirm";
 import deleteUser from "@/app/actions/users/deleteUser";
-import DetailsHeader from "@/app/components/ui/detailsheader";
+import DetailsHeader from "@/app/components/ui/admin-details/detailsheader";
+import TechnicianStatistics from "@/app/components/ui/admin-details/techstat";
+import HodStatistics from "@/app/components/ui/admin-details/hodstat";
+import EmployeeStatistics from "@/app/components/ui/admin-details/employeestat";
+
+type UserStatistics = {
+  completedRequests?: number;
+  activeRequests?: number;
+  maxAllowedRequests?: number;
+  averageCompletionDays?: number;
+
+  totalRequests?: number;
+  closedRequests?: number;
+
+  totalDeptRequests?: number;
+  approvedRequests?: number;
+  technicianCount?: number;
+};
 
 type UserDetail = {
   userid: number;
@@ -20,11 +43,13 @@ type UserDetail = {
   role: string;
   created: string;
   modified: string;
+  statistics?: UserStatistics;
 };
 
 export default function UserDetailPage() {
   const { id } = useParams();
-  const router = useRouter(); // add router
+  const router = useRouter();
+
   const [user, setUser] = useState<UserDetail | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -53,6 +78,7 @@ export default function UserDetailPage() {
   const handleDeleteUser = async () => {
     try {
       await deleteUser(Number(id));
+      router.push("/admin/users");
     } catch (err: any) {
       console.error("Failed to delete user:", err);
     }
@@ -66,15 +92,17 @@ export default function UserDetailPage() {
   if (error) return <CustomError message={error} />;
   if (!user) return <CustomError message="User not found" />;
 
+  const stats = user.statistics;
+
   return (
-    <div className="p-6 max-w-4xl mx-auto">
+    <div className="p-6 max-w-6xl mx-auto">
       <DetailsHeader
         name={user.fullname}
         onEdit={handleEdit}
         onDelete={() => setIsDeleteOpen(true)}
       />
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-10">
         <InfoCard
           icon={<FaUser className="text-blue-600" />}
           title="Username"
@@ -92,15 +120,18 @@ export default function UserDetailPage() {
         />
         <InfoCard
           icon={<FaCalendarAlt className="text-indigo-600" />}
-          title="Created At"
+          title="Joined on"
           value={formatDate(user.created)}
         />
-        <InfoCard
-          icon={<FaCalendarAlt className="text-red-600" />}
-          title="Last Modified"
-          value={formatDate(user.modified)}
-        />
       </div>
+
+      {stats && user.role === "Technician" && (
+        <TechnicianStatistics stats={stats} />
+      )}
+      {stats && user.role === "HOD" && <HodStatistics stats={stats} />}
+      {stats && user.role === "Employee" && (
+        <EmployeeStatistics stats={stats} />
+      )}
 
       <ConfirmDeleteModal
         isOpen={isDeleteOpen}
@@ -108,6 +139,34 @@ export default function UserDetailPage() {
         onConfirm={handleDeleteUser}
         itemName="user"
       />
+    </div>
+  );
+}
+
+type StatCardProps = {
+  title: string;
+  value: number | string | undefined;
+  highlight: "green" | "yellow" | "blue" | "purple" | "indigo" | "orange";
+};
+
+function StatCard({ title, value, highlight }: StatCardProps) {
+  const colorMap: Record<string, string> = {
+    green: "bg-green-100 text-green-700",
+    yellow: "bg-yellow-100 text-yellow-700",
+    blue: "bg-blue-100 text-blue-700",
+    purple: "bg-purple-100 text-purple-700",
+    indigo: "bg-indigo-100 text-indigo-700",
+    orange: "bg-orange-100 text-orange-700",
+  };
+
+  return (
+    <div className="bg-white p-6 rounded-xl shadow-sm border hover:shadow-md transition">
+      <p className="text-sm text-gray-500 mb-3">{title}</p>
+      <div
+        className={`text-3xl font-bold px-4 py-2 rounded-lg inline-block ${colorMap[highlight]}`}
+      >
+        {value ?? 0}
+      </div>
     </div>
   );
 }
