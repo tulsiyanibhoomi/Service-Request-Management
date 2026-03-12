@@ -2,7 +2,6 @@
 
 import { prisma } from "@/app/lib/prisma";
 import { revalidatePath } from "next/cache";
-import { redirect } from "next/navigation";
 import addTechnician from "../technician/addTechnician";
 import editTechnician from "../technician/editTechnician";
 import addDeptPerson from "../dept-person/addDeptPerson";
@@ -29,7 +28,7 @@ export default async function editUser({
   serviceDeptId,
 }: EditUserData) {
   try {
-    await prisma.$transaction(async (tx) => {
+    const result = await prisma.$transaction(async (tx) => {
       const existingUser = await tx.users.findFirst({
         where: {
           OR: [{ username }, { email }],
@@ -37,7 +36,7 @@ export default async function editUser({
         },
       });
       if (existingUser) {
-        throw new Error("Username or email already exists");
+        return { type: "error", message: "Username or Email already exists" };
       }
 
       const dataToUpdate: any = {
@@ -57,7 +56,7 @@ export default async function editUser({
       const roleRecord = await tx.role.findUnique({
         where: { rolename: role },
       });
-      if (!roleRecord) throw new Error("Role not found");
+      if (!roleRecord) return { type: "error", message: "Role not found" };
 
       await tx.user_role.create({
         data: {
@@ -100,12 +99,15 @@ export default async function editUser({
           });
         }
       }
-    });
-  } catch (err) {
-    console.error("Edit user failed:", err);
-    throw err;
-  }
 
-  revalidatePath("/admin/users");
-  redirect("/admin/users");
+      // success from transaction
+      return { type: "success", message: "User updated successfully" };
+    });
+
+    revalidatePath("/admin/users");
+    return result; // ✅ Return transaction result to frontend
+  } catch (err: any) {
+    console.error("Update user failed:", err);
+    return { type: "error", message: err?.message || "Something went wrong" };
+  }
 }

@@ -1,4 +1,5 @@
 "use client";
+import { showErrorAlert } from "@/app/components/utils/showAlert";
 import React from "react";
 
 interface FileUploaderProps {
@@ -25,7 +26,7 @@ const FileUploader: React.FC<FileUploaderProps> = ({
     const totalFiles = existingFiles.length + newFiles.length;
 
     if (totalFiles >= MAX_FILES) {
-      alert(`You can upload a maximum of ${MAX_FILES} files.`);
+      showErrorAlert(`You can upload a maximum of ${MAX_FILES} files.`);
       return;
     }
 
@@ -34,7 +35,7 @@ const FileUploader: React.FC<FileUploaderProps> = ({
 
     const invalidFiles = files.filter((f) => f.size > 10 * 1024 * 1024);
     if (invalidFiles.length > 0) {
-      alert("Some files exceed 10MB and will not be added.");
+      showErrorAlert("Some files exceed 10MB and will not be added.");
       files = files.filter((f) => f.size <= 10 * 1024 * 1024);
     }
 
@@ -50,7 +51,7 @@ const FileUploader: React.FC<FileUploaderProps> = ({
     const totalFiles = existingFiles.length + newFiles.length;
 
     if (totalFiles >= MAX_FILES) {
-      alert(`You can upload a maximum of ${MAX_FILES} files.`);
+      showErrorAlert(`You can upload a maximum of ${MAX_FILES} files.`);
       return;
     }
 
@@ -60,7 +61,7 @@ const FileUploader: React.FC<FileUploaderProps> = ({
     const validFiles = files.filter((f) => f.size <= 10 * 1024 * 1024);
 
     if (validFiles.length < files.length) {
-      alert("Some files exceed 10MB and will not be added.");
+      showErrorAlert("Some files exceed 10MB and will not be added.");
     }
 
     if (validFiles.length > 0) {

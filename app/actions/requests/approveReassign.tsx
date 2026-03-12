@@ -2,8 +2,6 @@
 
 import { prisma } from "@/app/lib/prisma";
 import { revalidatePath } from "next/cache";
-import { cookies } from "next/headers";
-import { redirect } from "next/navigation";
 
 interface ApproveReassignmentInput {
   requestId: number;
@@ -18,7 +16,6 @@ export async function approveReassignment({
   technicianId,
   comment,
 }: ApproveReassignmentInput) {
-  const cookieStore = await cookies();
   try {
     if (!hodId) throw new Error("HOD ID not provided");
     if (!requestId) throw new Error("Request ID is required");
@@ -28,14 +25,14 @@ export async function approveReassignment({
     });
 
     if (!approvedStatus) {
-      throw new Error('"Approved" status not found in database');
+      return { type: "error", message: "Something went wrong" };
     }
 
     const technician = await prisma.technician.findUnique({
       where: { technician_id: technicianId },
     });
 
-    if (!technician) throw new Error("Technician not found");
+    if (!technician) return { type: "error", message: "Something went wrong" };
 
     const maxAllowed = technician.max_requests_allowed ?? Infinity;
 
@@ -78,37 +75,11 @@ export async function approveReassignment({
           notes: comment?.trim() || "Request reassigned",
         },
       });
-      cookieStore.set({
-        name: "flashMessage",
-        value: "Request reassigned successfully!",
-        path: "/",
-        maxAge: 5,
-      });
-
-      cookieStore.set({
-        name: "flashType",
-        value: "success",
-        path: "/",
-        maxAge: 5,
-      });
     });
-
     revalidatePath("/hod/requests");
+    return { type: "success", message: "Request reassigned successfully" };
   } catch (error) {
     console.error("Error request reassignment:", error);
-    cookieStore.set({
-      name: "flashMessage",
-      value: "Something went wrong while reassigning request",
-      path: "/",
-      maxAge: 5,
-    });
-
-    cookieStore.set({
-      name: "flashType",
-      value: "error",
-      path: "/",
-      maxAge: 5,
-    });
+    return { type: "success", message: "Something went wrong" };
   }
-  redirect("/hod/requests");
 }

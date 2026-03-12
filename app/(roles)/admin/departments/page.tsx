@@ -1,12 +1,12 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import deleteDepartment from "@/app/actions/departments/deleteDepartment";
 import addDepartment from "@/app/actions/departments/addDepartment";
 import Table from "@/app/components/ui/table/table";
 import SkeletonCard from "@/app/components/utils/skeletoncard";
 import CustomError from "@/app/components/utils/error";
 import AddEditDeptModal from "@/app/components/ui/modals/addeditdept";
+import { useFlash } from "@/app/context/FlashContext";
 
 type Department = {
   service_dept_id: number;
@@ -24,6 +24,8 @@ export default function Departments() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
+
+  const { setFlash } = useFlash();
 
   async function fetchJson<T>(url: string): Promise<T> {
     const res = await fetch(url);
@@ -70,6 +72,7 @@ export default function Departments() {
       <Table
         data={departments}
         rowKey="service_dept_id"
+        columns={["name", "description", "email", "hod"]}
         rowClickRoute={(row) => `/admin/departments/${row.id}`}
       />
 
@@ -77,13 +80,14 @@ export default function Departments() {
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
         onSubmit={async (data) => {
-          await addDepartment(
+          const result = await addDepartment(
             data.deptName,
             data.description == "" ? null : data.description,
             data.cc_email_to_csv == "" ? null : data.cc_email_to_csv,
           );
           setIsModalOpen(false);
           await fetchDepartments();
+          setFlash({ message: result.message, type: result.type });
         }}
       />
     </div>

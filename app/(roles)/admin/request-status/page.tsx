@@ -7,6 +7,7 @@ import AddEditServiceStatusModal from "@/app/components/ui/modals/addeditreqstat
 import deleteRequestStatus from "@/app/actions/request-status/deleteStatus";
 import addServiceRequestStatus from "@/app/actions/request-status/addStatus";
 import editServiceRequestStatus from "@/app/actions/request-status/editStatus";
+import { useFlash } from "@/app/context/FlashContext";
 
 type RequestStatus = {
   id: number;
@@ -20,6 +21,8 @@ export default function Requests() {
   const [editingStatus, setEditingStatus] = useState<RequestStatus | null>(
     null,
   );
+
+  const { setFlash } = useFlash();
 
   const fetchStatus = async () => {
     try {
@@ -42,24 +45,18 @@ export default function Requests() {
   }) => {
     try {
       if (editingStatus) {
-        await editServiceRequestStatus(
+        const result = await editServiceRequestStatus(
           editingStatus.id,
           data.statusName,
           data.description,
         );
-
-        toast.success("Status updated successfully");
+        setFlash({ message: result.message, type: result.type });
       } else {
         const result = await addServiceRequestStatus(
           data.statusName,
           data.description || null,
         );
-
-        if (!result.success) {
-          toast.error(result.message || "Failed to add status");
-          return;
-        }
-        toast.success("Status added successfully");
+        setFlash({ message: result.message, type: result.type });
       }
       setModalOpen(false);
       setEditingStatus(null);
@@ -95,13 +92,13 @@ export default function Requests() {
         data={status}
         rowKey="id"
         showEditDelete
+        columns={["status_name", "description", "request_count"]}
         onEdit={handleEdit}
         onDelete={async (id: number) => {
           const result = await deleteRequestStatus(id);
-          if (result.success) {
-            setStatus((prev) => prev.filter((s) => s.id !== id));
-          }
-          return result;
+          setFlash({ message: result.message, type: result.type });
+          fetchStatus();
+          return { success: true, message: result.message };
         }}
       />
 

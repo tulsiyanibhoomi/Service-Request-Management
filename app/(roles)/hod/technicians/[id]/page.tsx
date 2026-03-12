@@ -12,9 +12,10 @@ import ConfirmDeleteModal from "@/app/components/ui/modals/deleteconfirm";
 import deleteUser from "@/app/actions/users/deleteUser";
 import DetailsHeader from "@/app/components/ui/admin-details/detailsheader";
 import TechnicianStatistics from "@/app/components/ui/admin-details/techstat";
-import HodStatistics from "@/app/components/ui/admin-details/hodstat";
-import EmployeeStatistics from "@/app/components/ui/admin-details/employeestat";
-import { useFlash } from "@/app/context/FlashContext";
+import {
+  showErrorAlert,
+  showPositiveAlert,
+} from "@/app/components/utils/showAlert";
 
 type UserStatistics = {
   completedRequests?: number;
@@ -24,10 +25,6 @@ type UserStatistics = {
 
   totalRequests?: number;
   closedRequests?: number;
-
-  totalDeptRequests?: number;
-  approvedRequests?: number;
-  technicianCount?: number;
 };
 
 type UserDetail = {
@@ -49,8 +46,6 @@ export default function UserDetailPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [isDeleteOpen, setIsDeleteOpen] = useState(false);
-
-  const { setFlash } = useFlash();
 
   const fetchUser = async () => {
     setLoading(true);
@@ -75,16 +70,17 @@ export default function UserDetailPage() {
   const handleDeleteUser = async () => {
     try {
       const result = await deleteUser(Number(id));
-      setFlash({ message: result.message, type: result.type });
-
-      router.push("/admin/users");
+      if (result.type === "error") showErrorAlert(result.message);
+      router.push("/hod/technicians");
+      if ((result.type = "success")) showPositiveAlert(result.message);
     } catch (err: any) {
       console.error("Failed to delete user:", err);
+      showErrorAlert(err.message);
     }
   };
 
   const handleEdit = () => {
-    router.push(`/admin/users/add?id=${id}`);
+    router.push(`/hod/technicians/add?id=${id}`);
   };
 
   if (loading) return <SkeletonCard />;
@@ -124,13 +120,7 @@ export default function UserDetailPage() {
         />
       </div>
 
-      {stats && user.role === "Technician" && (
-        <TechnicianStatistics stats={stats} />
-      )}
-      {stats && user.role === "HOD" && <HodStatistics stats={stats} />}
-      {stats && user.role === "Employee" && (
-        <EmployeeStatistics stats={stats} />
-      )}
+      <TechnicianStatistics stats={stats} />
 
       <ConfirmDeleteModal
         isOpen={isDeleteOpen}

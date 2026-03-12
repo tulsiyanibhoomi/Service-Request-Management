@@ -21,12 +21,9 @@ export default async function editServiceType(
     });
 
     revalidatePath(`/admin/departments/${dept_id}`);
-    return { success: true };
+    return { type: "success", message: "Service type updated successfully" };
   } catch (error) {
     console.error("Edit service type failed:", error);
-    return {
-      success: false,
-      message: "Failed to edit service type. Please try again.",
-    };
+    return { type: "error", message: "Something went wrong" };
   }
 }

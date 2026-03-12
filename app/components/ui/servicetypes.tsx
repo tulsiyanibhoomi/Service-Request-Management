@@ -6,6 +6,7 @@ import ConfirmDeleteModal from "@/app/components/ui/modals/deleteconfirm";
 import AddEditServiceTypeModal from "./modals/addeditservicetype";
 import addServiceType from "@/app/actions/service-types/addType";
 import editServiceType from "@/app/actions/service-types/editType";
+import { useFlash } from "@/app/context/FlashContext";
 
 type ServiceType = {
   id: number;
@@ -49,6 +50,8 @@ export default function ServiceTypes({
     setIsDeleteOpen(false);
   };
 
+  const { setFlash } = useFlash();
+
   return (
     <div className="mt-6 bg-white border border-gray-100 rounded-xl shadow-sm p-5">
       <div className="flex justify-between items-center mb-4">
@@ -69,37 +72,43 @@ export default function ServiceTypes({
       </div>
 
       <div className="flex flex-wrap gap-3">
-        {serviceTypes.map((st) => (
-          <div key={st.id} className="relative group">
-            <span
-              onClick={() => {
-                if (isEditing) {
-                  setEditingItem(st);
-                  setIsAddOpen(true);
-                } else {
-                  onEdit?.(st.id);
-                }
-              }}
-              className={`flex items-center justify-center px-6 py-3 rounded-full text-base font-medium min-w-[120px] transition
+        {serviceTypes.length === 0 ? (
+          <div className="text-gray-500 italic min-w-[120px] py-3 px-6 border border-gray-200 rounded-full">
+            No service types yet
+          </div>
+        ) : (
+          serviceTypes.map((st) => (
+            <div key={st.id} className="relative group">
+              <span
+                onClick={() => {
+                  if (isEditing) {
+                    setEditingItem(st);
+                    setIsAddOpen(true);
+                  } else {
+                    onEdit?.(st.id);
+                  }
+                }}
+                className={`flex items-center justify-center px-6 py-3 rounded-full text-base font-medium min-w-[120px] transition
                 ${
                   isEditing
                     ? "cursor-pointer bg-blue-100 text-blue-800 hover:bg-blue-200"
                     : "bg-blue-100 text-blue-800"
                 }`}
-            >
-              {st.name}
-            </span>
-
-            {isEditing && (
-              <button
-                onClick={() => handleDeleteClick(st.id)}
-                className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full p-1 shadow hover:bg-red-600 transition"
               >
-                <FaTimes className="text-xs" />
-              </button>
-            )}
-          </div>
-        ))}
+                {st.name}
+              </span>
+
+              {isEditing && (
+                <button
+                  onClick={() => handleDeleteClick(st.id)}
+                  className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full p-1 shadow hover:bg-red-600 transition"
+                >
+                  <FaTimes className="text-xs" />
+                </button>
+              )}
+            </div>
+          ))
+        )}
         {isEditing && (
           <button
             onClick={() => {
@@ -135,15 +144,21 @@ export default function ServiceTypes({
         }
         onSubmit={async (data: any) => {
           if (editingItem) {
-            await editServiceType(
+            const result = await editServiceType(
               editingItem.id,
               deptId,
               data.name,
               data.description,
             );
             setEditingItem(undefined);
+            setFlash({ message: result.message, type: result.type });
           } else {
-            await addServiceType(deptId, data.name, data.description);
+            const result = await addServiceType(
+              deptId,
+              data.name,
+              data.description,
+            );
+            setFlash({ message: result.message, type: result.type });
           }
           setIsAddOpen(false);
           onRefresh?.();

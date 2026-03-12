@@ -2,8 +2,6 @@
 
 import { prisma } from "@/app/lib/prisma";
 import { revalidatePath } from "next/cache";
-import { cookies } from "next/headers";
-import { redirect } from "next/navigation";
 
 interface CloseRequestInput {
   requestId: number;
@@ -16,7 +14,6 @@ export async function closeServiceRequest({
   hodId,
   comment,
 }: CloseRequestInput) {
-  const cookieStore = await cookies();
   try {
     if (!requestId) throw new Error("Request ID is required");
     if (!comment || comment.trim() === "") {
@@ -81,36 +78,10 @@ export async function closeServiceRequest({
         }
       }
     }
-    cookieStore.set({
-      name: "flashMessage",
-      value: "Request closed successfully!",
-      path: "/",
-      maxAge: 5,
-    });
-
-    cookieStore.set({
-      name: "flashType",
-      value: "info",
-      path: "/",
-      maxAge: 5,
-    });
-
     revalidatePath("/hod/requests");
+    return { type: "success", message: "Request closed successfully" };
   } catch (error) {
     console.error("Error closing request:", error);
-    cookieStore.set({
-      name: "flashMessage",
-      value: "Something went wrong while closing request",
-      path: "/",
-      maxAge: 5,
-    });
-
-    cookieStore.set({
-      name: "flashType",
-      value: "error",
-      path: "/",
-      maxAge: 5,
-    });
+    return { type: "error", message: "Something went wrong" };
   }
-  redirect("/hod/requests");
 }

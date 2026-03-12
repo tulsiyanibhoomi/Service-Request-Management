@@ -5,7 +5,7 @@ import { NextResponse } from "next/server";
 export async function GET() {
   const user = await getCurrentUser();
 
-  const TECHNICIAN_ID = user.userid;
+  const TECHNICIAN_ID = user.id;
 
   try {
     const total = await prisma.service_request.count({

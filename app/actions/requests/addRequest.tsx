@@ -2,7 +2,6 @@
 
 import { prisma } from "@/app/lib/prisma";
 import { revalidatePath } from "next/cache";
-import { redirect } from "next/navigation";
 import { getCurrentUser } from "@/app/lib/auth";
 import { cookies } from "next/headers";
 
@@ -72,37 +71,11 @@ export default async function addRequest(formData: FormData) {
           changed_at: now,
         },
       });
-      cookieStore.set({
-        name: "flashMessage",
-        value: "New request submitted successfully!",
-        path: "/",
-        maxAge: 5,
-      });
-
-      cookieStore.set({
-        name: "flashType",
-        value: "success",
-        path: "/",
-        maxAge: 5,
-      });
     });
+    revalidatePath("/employee/requests");
+    return { type: "success", message: "Request raised successfully" };
   } catch (error) {
     console.error("Error submitting request:", error);
-    cookieStore.set({
-      name: "flashMessage",
-      value: "Something went wrong while submitting request",
-      path: "/",
-      maxAge: 5,
-    });
-
-    cookieStore.set({
-      name: "flashType",
-      value: "error",
-      path: "/",
-      maxAge: 5,
-    });
-    throw error;
+    return { type: "error", message: "Something went wrong" };
   }
-  revalidatePath("/employee/requests");
-  redirect("/employee/requests");
 }

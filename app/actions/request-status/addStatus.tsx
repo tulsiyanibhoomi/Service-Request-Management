@@ -16,12 +16,12 @@ export default async function addServiceRequestStatus(
     });
 
     revalidatePath(`/admin/request-status`);
-    return { success: true };
+    return {
+      type: "success",
+      message: "New request status added successfully",
+    };
   } catch (error) {
     console.error("Add service request status failed:", error);
-    return {
-      success: false,
-      message: "Failed to add service request status. Please try again.",
-    };
+    return { type: "error", message: "Something went wrong" };
   }
 }

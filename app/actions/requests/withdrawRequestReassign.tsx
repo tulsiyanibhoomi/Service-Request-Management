@@ -2,8 +2,6 @@
 
 import { prisma } from "@/app/lib/prisma";
 import { revalidatePath } from "next/cache";
-import { cookies } from "next/headers";
-import { redirect } from "next/navigation";
 
 interface WithdrawRequestReassignmentInput {
   requestId: number;
@@ -14,10 +12,10 @@ export async function withdrawRequestReassign({
   requestId,
   technicianId,
 }: WithdrawRequestReassignmentInput) {
-  const cookieStore = await cookies();
   try {
-    if (!technicianId) throw new Error("Technician ID not provided");
-    if (!requestId) throw new Error("Request ID is required");
+    if (!technicianId)
+      return { type: "error", message: "Technician not selected" };
+    if (!requestId) return { type: "error", message: "Request not found" };
 
     await prisma.$transaction(async (tx) => {
       await tx.service_request.update({
@@ -28,37 +26,10 @@ export async function withdrawRequestReassign({
         },
       });
     });
-
-    cookieStore.set({
-      name: "flashMessage",
-      value: "Request for withdrawal of reassignment sent successfully!",
-      path: "/",
-      maxAge: 5,
-    });
-
-    cookieStore.set({
-      name: "flashType",
-      value: "info",
-      path: "/",
-      maxAge: 5,
-    });
-
     revalidatePath("/technician/requests");
+    return { type: "success", message: "Request for reassignment withdrawn" };
   } catch (error) {
     console.error("Error withdrawing request:", error);
-    cookieStore.set({
-      name: "flashMessage",
-      value: "Something went wrong while sending request for withdrawal",
-      path: "/",
-      maxAge: 5,
-    });
-
-    cookieStore.set({
-      name: "flashType",
-      value: "error",
-      path: "/",
-      maxAge: 5,
-    });
+    return { type: "error", message: "something went wrong" };
   }
-  redirect("/technician/requests");
 }

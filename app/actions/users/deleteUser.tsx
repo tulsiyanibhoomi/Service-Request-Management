@@ -2,7 +2,6 @@
 
 import { prisma } from "@/app/lib/prisma";
 import { revalidatePath } from "next/cache";
-import { redirect } from "next/navigation";
 
 export default async function deleteUser(userid: number) {
   try {
@@ -41,15 +40,10 @@ export default async function deleteUser(userid: number) {
         await tx.service_dept_person.deleteMany({ where: { userid } });
       }
     });
+    revalidatePath("/admin/users");
+    return { type: "success", message: "User deleted successfully" };
   } catch (error) {
     console.error("Delete user failed:", error);
-    return {
-      success: false,
-      message:
-        "Unable to delete user. This user may be linked to other records.",
-    };
+    return { type: "error", message: "Something went wrong" };
   }
-
-  revalidatePath("/admin/users");
-  redirect("/admin/users");
 }

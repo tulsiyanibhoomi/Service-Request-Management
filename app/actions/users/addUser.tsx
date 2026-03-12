@@ -3,10 +3,8 @@
 import { prisma } from "@/app/lib/prisma";
 import bcrypt from "bcryptjs";
 import { revalidatePath } from "next/cache";
-import { redirect } from "next/navigation";
 import addTechnician from "../technician/addTechnician";
 import addDeptPerson from "../dept-person/addDeptPerson";
-import { toast } from "react-toastify";
 
 interface AddUserData {
   username: string;
@@ -33,7 +31,7 @@ export default async function addUser({
     });
 
     if (existingUser) {
-      throw new Error("Username or email already exists");
+      return { type: "error", message: "Username or Email already exists" };
     }
 
     const names = fullName.trim().split(" ");
@@ -106,11 +104,10 @@ export default async function addUser({
         });
       }
     });
+    revalidatePath("/admin/users");
+    return { type: "success", message: "User added successfully" };
   } catch (err: any) {
     console.error("Add user failed:", err);
-    throw err;
+    return { type: "error", message: "Something went wrong" };
   }
-
-  revalidatePath("/admin/users");
-  redirect("/admin/users");
 }

@@ -20,12 +20,12 @@ export default async function editServiceRequestStatus(
     });
 
     revalidatePath(`/admin/request-status`);
-    return { success: true };
+    return {
+      type: "success",
+      message: "Request Status updated successfully",
+    };
   } catch (error) {
     console.error("Edit service request status failed:", error);
-    return {
-      success: false,
-      message: "Failed to edit service request status. Please try again.",
-    };
+    return { type: "error", message: "Something went wrong" };
   }
 }

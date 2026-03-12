@@ -37,7 +37,6 @@ model users {
   isactive                       Boolean?                         @default(true)
   created                        DateTime?                        @default(now()) @db.Timestamp(0)
   modified                       DateTime?                        @default(now()) @db.Timestamp(0)
-  salt                           String                           @default("mysaltvalue") @db.VarChar(255)
   service_dept_person            service_dept_person?
   service_request                service_request[]
   service_request_reply          service_request_reply[]

@@ -2,8 +2,6 @@
 
 import { prisma } from "@/app/lib/prisma";
 import { revalidatePath } from "next/cache";
-import { cookies } from "next/headers";
-import { redirect } from "next/navigation";
 
 interface RequestReassignmentInput {
   requestId: number;
@@ -16,11 +14,10 @@ export async function requestReassignment({
   technicianId,
   reason,
 }: RequestReassignmentInput) {
-  const cookieStore = await cookies();
-
   try {
-    if (!technicianId) throw new Error("Technician ID not provided");
-    if (!requestId) throw new Error("Request ID is required");
+    if (!technicianId)
+      return { type: "error", message: "Technician not found" };
+    if (!requestId) return { type: "error", message: "Request not found" };
 
     await prisma.$transaction(async (tx) => {
       await tx.service_request.update({
@@ -31,36 +28,10 @@ export async function requestReassignment({
         },
       });
     });
-    cookieStore.set({
-      name: "flashMessage",
-      value: "Request sent for reassignment successfully!",
-      path: "/",
-      maxAge: 5,
-    });
-
-    cookieStore.set({
-      name: "flashType",
-      value: "info",
-      path: "/",
-      maxAge: 5,
-    });
-
     revalidatePath("/technician/requests");
+    return { type: "success", message: "Request for reassignment sent" };
   } catch (error) {
     console.error("Error request reassignment:", error);
-    cookieStore.set({
-      name: "flashMessage",
-      value: "Something went wrong while requesting reassignment",
-      path: "/",
-      maxAge: 5,
-    });
-
-    cookieStore.set({
-      name: "flashType",
-      value: "error",
-      path: "/",
-      maxAge: 5,
-    });
+    return { type: "error", message: "Something went wrong" };
   }
-  redirect("/technician/requests");
 }

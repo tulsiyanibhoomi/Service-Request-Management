@@ -28,13 +28,9 @@ export default async function deleteServiceType(
     });
 
     revalidatePath(`/admin/departments/${dept_id}`);
-    return { success: true };
+    return { type: "success", message: "Service type deleted successfully" };
   } catch (error) {
     console.error("Delete service type failed:", error);
-    return {
-      success: false,
-      message:
-        "Unable to delete service type. It may be linked to other records and was deactivated instead.",
-    };
+    return { type: "error", message: "Something went wrong" };
   }
 }

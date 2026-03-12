@@ -11,6 +11,11 @@ import SkeletonCard from "@/app/components/utils/skeletoncard";
 import CustomError from "@/app/components/utils/error";
 import { approveReassignment } from "@/app/actions/requests/approveReassign";
 import { declineReassignment } from "@/app/actions/requests/declineReassign";
+import { useRouter } from "next/navigation";
+import {
+  showErrorAlert,
+  showPositiveAlert,
+} from "@/app/components/utils/showAlert";
 
 interface DecisionModalProps {
   request: ServiceRequest;
@@ -25,12 +30,7 @@ interface Technician {
   selectable: boolean;
 }
 
-type ActionHandler = (payload: any) => Promise<void>;
-
-const actionMap: Record<
-  DecisionModalProps["action"],
-  ActionHandler | undefined
-> = {
+const actionMap: any = {
   Approve: approveServiceRequest,
   Reassign: approveReassignment,
   Decline: declineServiceRequest,
@@ -56,6 +56,8 @@ export default function HODDecisionModal({
   const isReassign = action === "Reassign";
   const isApprove = action === "Approve";
   const showTechnicianSelect = isApprove || isReassign;
+
+  const router = useRouter();
 
   const fetchCurrentUser = async () => {
     try {
@@ -102,12 +104,14 @@ export default function HODDecisionModal({
     setSubmitLoading(true);
 
     try {
-      await declineReassignment({
+      const result = await declineReassignment({
         requestId: request.service_request_id,
         hodId: userId,
         comment: comment.trim() || undefined,
       });
+      if (result.type === "error") showErrorAlert(result.message);
       onClose();
+      if (result.type === "success") showPositiveAlert(result.message);
     } catch (err) {
       console.error(err);
       setFormError("Something went wrong. Please try again.");
@@ -146,7 +150,10 @@ export default function HODDecisionModal({
     if (showTechnicianSelect) payload.technicianId = technicianId;
 
     try {
-      await serverAction(payload);
+      const result = await serverAction(payload);
+      if (result.type === "error") showErrorAlert(result.message);
+      router.push("/hod/requests");
+      if (result.type === "success") showPositiveAlert(result.message);
       onClose();
     } catch (err) {
       console.error(err);

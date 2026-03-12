@@ -2,16 +2,12 @@
 
 import { prisma } from "@/app/lib/prisma";
 import { revalidatePath } from "next/cache";
-import { redirect } from "next/navigation";
 import cloudinary from "@/app/lib/cloudinary";
-import { cookies } from "next/headers";
 
 export default async function editRequest(
   requestId: number,
   formData: FormData,
 ) {
-  const cookieStore = await cookies();
-
   try {
     const existingFiles = JSON.parse(formData.get("existingFiles") as string);
 
@@ -51,37 +47,10 @@ export default async function editRequest(
         attachment_path5: finalAttachments[4] || null,
       },
     });
-
-    cookieStore.set({
-      name: "flashMessage",
-      value: "Request updated successfully!",
-      path: "/",
-      maxAge: 5,
-    });
-
-    cookieStore.set({
-      name: "flashType",
-      value: "success",
-      path: "/",
-      maxAge: 5,
-    });
+    revalidatePath("/employee/requests");
+    return { type: "success", message: "Request updated successfully" };
   } catch (error) {
     console.error("Error updating request:", error);
-    cookieStore.set({
-      name: "flashMessage",
-      value: "Something went wrong while updating request",
-      path: "/",
-      maxAge: 5,
-    });
-
-    cookieStore.set({
-      name: "flashType",
-      value: "error",
-      path: "/",
-      maxAge: 5,
-    });
-    throw error;
+    return { type: "error", message: "Something went wrong" };
   }
-  revalidatePath("/employee/requests");
-  redirect("/employee/requests");
 }

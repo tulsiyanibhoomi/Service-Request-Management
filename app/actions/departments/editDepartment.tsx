@@ -23,12 +23,9 @@ export default async function editServiceDepartment(
     });
 
     revalidatePath(`/admin/departments`);
-    return { success: true };
+    return { type: "success", message: "Department updated successfully" };
   } catch (error) {
     console.error("Edit service dept failed:", error);
-    return {
-      success: false,
-      message: "Failed to edit service dept. Please try again.",
-    };
+    return { type: "error", message: "Department updated successfully" };
   }
 }

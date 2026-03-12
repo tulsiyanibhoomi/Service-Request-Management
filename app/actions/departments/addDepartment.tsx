@@ -18,14 +18,10 @@ export default async function addServiceDepartment(
         modified: new Date(),
       },
     });
-
     revalidatePath(`/admin/departments`);
-    return { success: true };
+    return { type: "success", message: "New department added successfully" };
   } catch (error) {
     console.error("Add service dept failed:", error);
-    return {
-      success: false,
-      message: "Failed to add service dept. Please try again.",
-    };
+    return { type: "error", message: "Something went wrong" };
   }
 }

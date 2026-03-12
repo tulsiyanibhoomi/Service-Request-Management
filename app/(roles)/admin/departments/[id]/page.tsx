@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useParams } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
 import SkeletonCard from "@/app/components/utils/skeletoncard";
 import CustomError from "@/app/components/utils/error";
 import { formatDate } from "@/app/components/utils/styles";
@@ -20,6 +20,8 @@ import AddEditDeptModal from "@/app/components/ui/modals/addeditdept";
 import editServiceDepartment from "@/app/actions/departments/editDepartment";
 import deleteDepartment from "@/app/actions/departments/deleteDepartment";
 import DetailsHeader from "@/app/components/ui/admin-details/detailsheader";
+import { useFlash } from "@/app/context/FlashContext";
+import { showErrorAlert } from "@/app/components/utils/showAlert";
 
 type ServiceType = {
   id: number;
@@ -46,6 +48,10 @@ export default function DepartmentDetailPage() {
   const [isDeleteOpen, setIsDeleteOpen] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
 
+  const router = useRouter();
+
+  const { setFlash } = useFlash();
+
   const fetchDepartment = async () => {
     setLoading(true);
     setError(null);
@@ -68,19 +74,21 @@ export default function DepartmentDetailPage() {
 
   const handleDeleteServiceType = async (serviceTypeId: number) => {
     try {
-      const res = await deleteServiceType(serviceTypeId, Number(id));
-      if (!res.success)
-        throw new Error(res.message || "Failed to delete service type");
+      const result = await deleteServiceType(serviceTypeId, Number(id));
       await fetchDepartment();
+      setFlash({ message: result.message, type: result.type });
     } catch (err: any) {
       console.error(err);
-      alert(err.message || "Failed to delete service type");
+      showErrorAlert(err.message || "Failed to delete service type");
     }
   };
 
   const handleDeleteDepartment = async () => {
     try {
-      await deleteDepartment(Number(id));
+      const result = await deleteDepartment(Number(id));
+      setFlash({ message: result.message, type: result.type });
+
+      router.push("/admin/departments");
     } catch (err: any) {
       console.error("Failed to delete department:", err);
     }
@@ -154,7 +162,7 @@ export default function DepartmentDetailPage() {
           cc_email_to_csv: department.cc_email_to_csv ?? "",
         }}
         onSubmit={async (data) => {
-          await editServiceDepartment(
+          const result = await editServiceDepartment(
             department.service_dept_id,
             data.deptName,
             data.description,
@@ -162,6 +170,7 @@ export default function DepartmentDetailPage() {
           );
           setIsModalOpen(false);
           await fetchDepartment();
+          setFlash({ message: result.message, type: result.type });
         }}
       />
     </div>

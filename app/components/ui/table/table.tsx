@@ -39,7 +39,13 @@ export default function Table({
 
   const router = useRouter();
 
-  const CENTERED_COLUMNS = ["roles", "status", "priority", "type"];
+  const CENTERED_COLUMNS = [
+    "roles",
+    "status",
+    "priority",
+    "type",
+    "availability_status",
+  ];
 
   useEffect(() => {
     setTableData(data);
@@ -66,15 +72,7 @@ export default function Table({
     setIsDeleting(true);
 
     try {
-      const result = await onDelete(selectedData[rowKey]);
-      if (result.success) {
-        toast.success("Deleted successfully ✅");
-        setTableData((prev) =>
-          prev.filter((u) => u[rowKey] !== selectedData[rowKey]),
-        );
-      } else {
-        toast.error(result.message || "Failed to delete ❌");
-      }
+      await onDelete(selectedData[rowKey]);
     } catch (err) {
       console.error(err);
       toast.error("Unexpected error occurred ❌");
@@ -126,22 +124,37 @@ export default function Table({
             </tr>
           </thead>
           <tbody className="bg-white divide-y divide-gray-200">
-            {tableData.map((row, idx) => (
-              <TableRow
-                key={idx}
-                row={row}
-                columns={columnsToRender}
-                rowKey={rowKey}
-                onEdit={onEdit}
-                rowActions={rowActions}
-                showEditDelete={showEditDelete}
-                rowClickRoute={rowClickRoute}
-                router={router}
-                isDeleting={isDeleting}
-                setSelectedData={setSelectedData}
-                setIsModalOpen={setIsModalOpen}
-              />
-            ))}
+            {tableData.length > 0 ? (
+              tableData.map((row, idx) => (
+                <TableRow
+                  key={idx}
+                  row={row}
+                  columns={columnsToRender}
+                  rowKey={rowKey}
+                  onEdit={onEdit}
+                  rowActions={rowActions}
+                  showEditDelete={showEditDelete}
+                  rowClickRoute={rowClickRoute}
+                  router={router}
+                  isDeleting={isDeleting}
+                  setSelectedData={setSelectedData}
+                  setIsModalOpen={setIsModalOpen}
+                />
+              ))
+            ) : (
+              <tr>
+                <td
+                  colSpan={
+                    columnsToRender.length +
+                    (rowActions?.length || 0) +
+                    (showEditDelete ? 2 : 0)
+                  }
+                  className="px-6 py-4 text-center text-gray-500"
+                >
+                  No data available
+                </td>
+              </tr>
+            )}
           </tbody>
         </table>
       </div>

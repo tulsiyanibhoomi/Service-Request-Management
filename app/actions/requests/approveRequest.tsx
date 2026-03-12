@@ -2,8 +2,6 @@
 
 import { prisma } from "@/app/lib/prisma";
 import { revalidatePath } from "next/cache";
-import { cookies } from "next/headers";
-import { redirect } from "next/navigation";
 
 interface ApproveRequestInput {
   requestId: number;
@@ -18,8 +16,6 @@ export async function approveServiceRequest({
   hodId,
   comment,
 }: ApproveRequestInput) {
-  const cookieStore = await cookies();
-
   try {
     if (!technicianId) throw new Error("Technician must be selected");
     if (!requestId) throw new Error("Request ID is required");
@@ -77,37 +73,11 @@ export async function approveServiceRequest({
           notes: comment ?? null,
         },
       });
-      cookieStore.set({
-        name: "flashMessage",
-        value: "Request approved successfully!",
-        path: "/",
-        maxAge: 5,
-      });
-
-      cookieStore.set({
-        name: "flashType",
-        value: "success",
-        path: "/",
-        maxAge: 5,
-      });
     });
-
     revalidatePath("/hod/requests");
+    return { type: "success", message: "Request approved successfully" };
   } catch (error) {
     console.error("Error approving request:", error);
-    cookieStore.set({
-      name: "flashMessage",
-      value: "Something went wrong while approving request",
-      path: "/",
-      maxAge: 5,
-    });
-
-    cookieStore.set({
-      name: "flashType",
-      value: "error",
-      path: "/",
-      maxAge: 5,
-    });
+    return { type: "error", message: "Something went wrong" };
   }
-  redirect("/hod/requests");
 }

@@ -1,6 +1,5 @@
 "use client";
 
-import deleteRequest from "@/app/actions/requests/deleteRequest";
 import Table from "@/app/components/ui/table/table";
 import { ROUTES } from "@/app/config/routes";
 import { ServiceRequest } from "@/app/types/requests";
@@ -62,7 +61,6 @@ export default function EmployeeRequests() {
             rowClickRoute={(row) =>
               `/employee/requests/${row.service_request_id}`
             }
-            onDelete={deleteRequest}
           />
         </div>
       </div>

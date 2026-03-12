@@ -26,7 +26,6 @@ interface TableRowProps {
 export default function TableRow({
   row,
   columns,
-  rowKey,
   onEdit,
   showEditDelete,
   rowActions,
@@ -67,6 +66,25 @@ export default function TableRow({
                         ? "bg-purple-500 text-white"
                         : "bg-gray-300 text-gray-800"
                 }`}
+              >
+                {formatValue(value)}
+              </span>
+            </td>
+          );
+        }
+
+        if (col.toLowerCase() === "availability_status" && value) {
+          const statusColor =
+            value.toLowerCase() === "available"
+              ? "bg-green-500 text-white"
+              : value.toLowerCase() === "busy"
+                ? "bg-red-500 text-white"
+                : "bg-gray-300 text-gray-800";
+
+          return (
+            <td key={i} className={baseTdClass}>
+              <span
+                className={`px-3 py-1 rounded-full font-semibold ${statusColor}`}
               >
                 {formatValue(value)}
               </span>

@@ -3,26 +3,36 @@ import { prisma } from "./prisma";
 import crypto from "crypto";
 import { cookies } from "next/headers";
 import { signToken, verifyToken } from "./jwt";
+import bcrypt from "bcryptjs";
 
 const scryptAsync = promisify(crypto.scrypt);
 const KEY_LENGTH = 64;
 
-export async function verifyPassword(
-  password: string,
-  hash: string,
-  salt: string,
-) {
-  if (salt === "mysaltvalue") {
-    return password === hash;
-  }
-  const derivedKey = (await scryptAsync(password, salt, KEY_LENGTH)) as Buffer;
-  return crypto.timingSafeEqual(Buffer.from(hash, "hex"), derivedKey);
+// export async function verifyPassword(
+//   password: string,
+//   hash: string,
+//   salt: string,
+// ) {
+//   if (salt === "mysaltvalue") {
+//     return password === hash;
+//   }
+//   const derivedKey = (await scryptAsync(password, salt, KEY_LENGTH)) as Buffer;
+//   return crypto.timingSafeEqual(Buffer.from(hash, "hex"), derivedKey);
+// }
+
+// export async function hashPassword(password: string, salt: any) {
+//   const derivedKey = (await scryptAsync(password, salt, KEY_LENGTH)) as Buffer;
+//   return { salt, hash: derivedKey.toString("hex") };
+// }
+
+export async function verifyPassword(password: string, storedHash: string) {
+  const isMatch = await bcrypt.compare(password, storedHash);
+  return isMatch;
 }
 
 export async function hashPassword(password: string) {
-  const salt = crypto.randomBytes(16).toString("hex");
-  const derivedKey = (await scryptAsync(password, salt, KEY_LENGTH)) as Buffer;
-  return { salt, hash: derivedKey.toString("hex") };
+  const hash = await bcrypt.hash(password, 12);
+  return hash;
 }
 
 export async function login(email: string, password: string) {
@@ -42,7 +52,7 @@ export async function login(email: string, password: string) {
       return { success: false, error: "Email doesn't exist" };
     }
 
-    const isValid = await verifyPassword(password, user.password, user.salt);
+    const isValid = await verifyPassword(password, user.password);
 
     if (!isValid) return { success: false, error: "Invalid credentials" };
 

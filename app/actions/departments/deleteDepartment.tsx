@@ -2,7 +2,6 @@
 
 import { prisma } from "@/app/lib/prisma";
 import { revalidatePath } from "next/cache";
-import { redirect } from "next/navigation";
 
 export default async function deleteDepartment(service_dept_id: number) {
   try {
@@ -24,8 +23,6 @@ export default async function deleteDepartment(service_dept_id: number) {
           })
         : 0;
 
-      console.log(linked_requests);
-
       if (linked_dept_person > 0 || linked_requests > 0) {
         await tx.service_dept.update({
           where: { service_dept_id },
@@ -41,10 +38,10 @@ export default async function deleteDepartment(service_dept_id: number) {
         });
       }
     });
+    revalidatePath("/admin/departments");
+    return { type: "success", message: "Department deleted successfully" };
   } catch (error) {
     console.error("Delete department failed:", error);
+    return { type: "error", message: "Something went wrong" };
   }
-
-  revalidatePath("/admin/departments");
-  redirect("/admin/departments");
 }

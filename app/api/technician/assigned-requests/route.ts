@@ -6,7 +6,7 @@ export async function GET() {
   try {
     const user = await getCurrentUser();
 
-    const TECHNICIAN_ID = user.userid;
+    const TECHNICIAN_ID = user.id;
 
     const requests = await prisma.service_request.findMany({
       where: {

@@ -8,16 +8,22 @@ import FileUploader from "./file-upload";
 import SkeletonCard from "@/app/components/utils/skeletoncard";
 import CustomError from "@/app/components/utils/error";
 import { Input, Select, TextArea } from "./form-utils";
+import { useRouter } from "next/navigation";
+import {
+  showErrorAlert,
+  showPositiveAlert,
+} from "@/app/components/utils/showAlert";
 
 const NewRequest = () => {
   const [removedFiles, setRemovedFiles] = useState<string[]>([]);
   const [submitLoading, setSubmitLoading] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
-  const [submitSuccess, setSubmitSuccess] = useState(false);
   const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
 
   const { formData, setFormData, requestTypes, loading, error, requestId } =
     useRequestFormData();
+
+  const router = useRouter();
 
   if (loading) return <SkeletonCard />;
 
@@ -90,12 +96,9 @@ const NewRequest = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-
     if (!validate()) return;
-
     setSubmitLoading(true);
     setSubmitError(null);
-    setSubmitSuccess(false);
 
     try {
       if (removedFiles.length > 0) {
@@ -128,12 +131,16 @@ const NewRequest = () => {
       data.append("existingFiles", JSON.stringify(allFiles));
 
       if (requestId) {
-        await editRequest(Number(requestId), data);
+        const result = await editRequest(Number(requestId), data);
+        if (result.type === "error") await showErrorAlert(result.message);
+        router.push("/employee/requests");
+        if (result.type === "success") await showPositiveAlert(result.message);
       } else {
-        await addRequest(data);
+        const result = await addRequest(data);
+        if (result.type === "error") await showErrorAlert(result.message);
+        router.push("/employee/requests");
+        if (result.type === "success") await showPositiveAlert(result.message);
       }
-
-      setSubmitSuccess(true);
     } catch (err: any) {
       console.error(err);
       setSubmitError(err.message || "Something went wrong");
@@ -149,11 +156,6 @@ const NewRequest = () => {
       </h2>
 
       {submitError && <CustomError message={submitError} />}
-      {submitSuccess && (
-        <p className="text-green-600 text-center mb-4">
-          Request submitted successfully!
-        </p>
-      )}
 
       <form
         onSubmit={handleSubmit}

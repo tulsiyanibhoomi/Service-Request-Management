@@ -1,7 +1,6 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import deleteRequest from "@/app/actions/requests/deleteRequest";
 import Table from "@/app/components/ui/table/table";
 import SkeletonCard from "@/app/components/utils/skeletoncard";
 import CustomError from "@/app/components/utils/error";
@@ -58,7 +57,6 @@ export default function TechnicianRequests() {
             rowClickRoute={(row) =>
               `/technician/requests/${row.service_request_id}`
             }
-            onDelete={deleteRequest}
           />
         </div>
       </div>

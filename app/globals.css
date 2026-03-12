@@ -5,6 +5,12 @@
   --foreground: #171717;
 }
 
+html,
+body {
+  height: 100%;
+  overflow: hidden;
+}
+
 @layer base {
   button {
     @apply cursor-pointer;

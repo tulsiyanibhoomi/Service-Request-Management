@@ -3,6 +3,11 @@
 import { useState } from "react";
 import { ServiceRequest } from "@/app/types/requests";
 import { cancelServiceRequest } from "@/app/actions/requests/cancelRequest";
+import { useRouter } from "next/navigation";
+import {
+  showErrorAlert,
+  showPositiveAlert,
+} from "@/app/components/utils/showAlert";
 
 interface EmployeeCancelModalProps {
   request: ServiceRequest;
@@ -17,6 +22,8 @@ export default function EmployeeCancelModal({
   const [formError, setFormError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
 
+  const router = useRouter();
+
   const handleCancelRequest = async () => {
     if (!reason.trim()) {
       setFormError("Please provide a reason for canceling the request");
@@ -27,11 +34,13 @@ export default function EmployeeCancelModal({
       setLoading(true);
       setFormError(null);
 
-      await cancelServiceRequest({
+      const result = await cancelServiceRequest({
         requestId: request.service_request_id,
         reason,
       });
-
+      if (result.type === "error") showErrorAlert(result.message);
+      router.push("/employee/requests");
+      if (result.type === "success") showPositiveAlert(result.message);
       onClose();
     } catch (err) {
       console.error(err);
@@ -83,4 +92,7 @@ export default function EmployeeCancelModal({
       </div>
     </div>
   );
+}
+function setFlash(arg0: { message: string; type: string }) {
+  throw new Error("Function not implemented.");
 }

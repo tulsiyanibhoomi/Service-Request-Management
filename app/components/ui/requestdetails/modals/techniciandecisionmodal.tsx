@@ -6,6 +6,11 @@ import { completeServiceRequest } from "@/app/actions/requests/completeRequest";
 import { requestReassignment } from "@/app/actions/requests/requestReassign";
 import { TechnicianAction } from "@/app/types/role_actions";
 import { withdrawRequestReassign } from "@/app/actions/requests/withdrawRequestReassign";
+import { useRouter } from "next/navigation";
+import {
+  showErrorAlert,
+  showPositiveAlert,
+} from "@/app/components/utils/showAlert";
 
 interface TechnicianWorkModalProps {
   requestId: number;
@@ -25,6 +30,8 @@ export default function TechnicianDecisionModal({
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
 
+  const router = useRouter();
+
   const handleSubmit = async () => {
     if (action === "Reassign" && !comment.trim()) {
       setError("Reason is required for reassignment");
@@ -35,14 +42,38 @@ export default function TechnicianDecisionModal({
       setLoading(true);
       setError(null);
 
-      if (action === "Start")
-        await startServiceRequest({ requestId, technicianId, comment });
+      let result: { message: string; type: string } = {
+        message: "",
+        type: "success",
+      };
+      if (action === "Start") {
+        result = await startServiceRequest({
+          requestId,
+          technicianId,
+          comment,
+        });
+      }
       if (action === "Complete")
-        await completeServiceRequest({ requestId, technicianId, comment });
+        result = await completeServiceRequest({
+          requestId,
+          technicianId,
+          comment,
+        });
       if (action === "Reassign")
-        await requestReassignment({ requestId, technicianId, reason: comment });
+        result = await requestReassignment({
+          requestId,
+          technicianId,
+          reason: comment,
+        });
       if (action === "Withdraw")
-        await withdrawRequestReassign({ requestId, technicianId });
+        result = await withdrawRequestReassign({ requestId, technicianId });
+
+      if (!result)
+        result = { message: "Action completed successfully", type: "success" };
+
+      if (result.type === "error") showErrorAlert(result.message);
+      router.push("/technician/requests");
+      if (result.type === "success") showPositiveAlert(result.message);
 
       onClose();
     } catch {

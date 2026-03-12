@@ -18,14 +18,10 @@ export default async function addServiceType(
         modified: new Date(),
       },
     });
-
     revalidatePath(`/admin/departments/${dept_id}`);
-    return { success: true };
+    return { type: "success", message: "Service type added successfully" };
   } catch (error) {
     console.error("Add service type failed:", error);
-    return {
-      success: false,
-      message: "Failed to add service type. Please try again.",
-    };
+    return { type: "error", message: "Something went wrong" };
   }
 }
