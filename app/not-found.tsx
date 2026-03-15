@@ -1,6 +1,6 @@
 "use client";
 import { useRouter } from "next/navigation";
-import { ROUTES } from "../config/routes";
+import { ROUTES } from "@/app/config/routes";
 
 export default function ForbiddenPage() {
   const router = useRouter();
