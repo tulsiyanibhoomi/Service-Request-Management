@@ -7,6 +7,7 @@ import Link from "next/link";
 import { useEffect, useState } from "react";
 import SkeletonCard from "@/app/components/utils/skeletoncard";
 import CustomError from "@/app/components/utils/error";
+import { encodeId } from "@/app/components/utils/url";
 
 export default function EmployeeRequests() {
   const [requests, setRequests] = useState<ServiceRequest[]>([]);
@@ -59,7 +60,7 @@ export default function EmployeeRequests() {
             ]}
             rowKey="service_request_id"
             rowClickRoute={(row) =>
-              `/employee/requests/${row.service_request_id}`
+              `/employee/requests/${encodeId(row.service_request_id)}`
             }
           />
         </div>

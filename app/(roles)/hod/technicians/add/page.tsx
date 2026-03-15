@@ -4,7 +4,6 @@ import { useEffect, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import SkeletonCard from "@/app/components/utils/skeletoncard";
 import CustomError from "@/app/components/utils/error";
-import { useFlash } from "@/app/context/FlashContext";
 import UserForm, {
   Department,
   Role,
@@ -16,7 +15,6 @@ export default function AddEditUserPage() {
   const searchParams = useSearchParams();
   const id = searchParams.get("id");
 
-  const { setFlash } = useFlash();
   const [loading, setLoading] = useState(true);
   const [errorMsg, setErrorMsg] = useState("");
   const [roles, setRoles] = useState<Role[]>([]);
@@ -85,7 +83,6 @@ export default function AddEditUserPage() {
       roles={roles}
       departments={departments}
       initialUser={initialUser}
-      setFlash={setFlash}
       currentUserRole="hod"
       currentUserDeptId={currentUserDeptId}
     />

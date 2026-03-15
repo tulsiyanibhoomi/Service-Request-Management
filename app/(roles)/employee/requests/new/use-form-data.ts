@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { useSearchParams } from "next/navigation";
 
 export type EmployeeOverview = {
-  total: number;
+  totalAll: number;
   pending: number;
   in_progress: number;
   completed: number;
@@ -37,7 +37,7 @@ export const useRequestFormData = () => {
           throw new Error("Failed to fetch employee overview");
         const overviewData: EmployeeOverview = await overviewRes.json();
 
-        const requestNumber = overviewData.total + 1;
+        const requestNumber = overviewData.totalAll + 1;
         const initials = user.fullname
           .split(" ")
           .map((n: string) => n[0])

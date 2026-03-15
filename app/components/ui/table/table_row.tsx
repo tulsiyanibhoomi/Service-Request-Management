@@ -40,7 +40,12 @@ export default function TableRow({
       className={`hover:bg-gray-100 transition-colors duration-200 ${
         rowClickRoute ? "cursor-pointer" : ""
       }`}
-      onClick={() => rowClickRoute && router.push(rowClickRoute(row))}
+      onClick={() => {
+        if (rowClickRoute) {
+          const url = rowClickRoute(row);
+          router.push(url);
+        }
+      }}
     >
       {columns.map((col, i) => {
         const value = row[col];

@@ -1,14 +1,17 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/app/lib/prisma";
+import { decodeId } from "@/app/components/utils/url";
 
-export async function GET(req: Request, context: { params: { id: number } }) {
+export async function GET(req: Request, context: { params: { id: string } }) {
   const { id } = await context.params;
-  if (isNaN(id)) {
+  const numericId = decodeId(id);
+
+  if (!numericId) {
     return NextResponse.json({ error: "Invalid ID" }, { status: 400 });
   }
 
   const dept = await prisma.service_dept.findUnique({
-    where: { service_dept_id: Number(id) },
+    where: { service_dept_id: Number(numericId) },
     select: {
       service_dept_id: true,
       service_dept_name: true,

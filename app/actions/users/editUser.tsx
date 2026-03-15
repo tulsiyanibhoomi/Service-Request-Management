@@ -6,9 +6,10 @@ import addTechnician from "../technician/addTechnician";
 import editTechnician from "../technician/editTechnician";
 import addDeptPerson from "../dept-person/addDeptPerson";
 import editDeptPerson from "../dept-person/editDeptPerson";
+import { decodeId } from "@/app/components/utils/url";
 
 interface EditUserData {
-  userid: number;
+  userid: string;
   username: string;
   fullName: string;
   email: string;
@@ -28,11 +29,12 @@ export default async function editUser({
   serviceDeptId,
 }: EditUserData) {
   try {
+    const decodedId = decodeId(userid);
     const result = await prisma.$transaction(async (tx) => {
       const existingUser = await tx.users.findFirst({
         where: {
           OR: [{ username }, { email }],
-          NOT: { userid },
+          NOT: { userid: { equals: Number(decodedId) } },
         },
       });
       if (existingUser) {
@@ -47,11 +49,11 @@ export default async function editUser({
       };
 
       await tx.users.update({
-        where: { userid },
+        where: { userid: Number(decodedId) },
         data: dataToUpdate,
       });
 
-      await tx.user_role.deleteMany({ where: { userid } });
+      await tx.user_role.deleteMany({ where: { userid: Number(decodedId) } });
 
       const roleRecord = await tx.role.findUnique({
         where: { rolename: role },
@@ -60,38 +62,38 @@ export default async function editUser({
 
       await tx.user_role.create({
         data: {
-          userid,
+          userid: Number(decodedId),
           roleid: roleRecord.roleid,
         },
       });
 
       if (role.toLowerCase() === "technician") {
         const existingTech = await tx.technician.findUnique({
-          where: { technician_id: userid },
+          where: { technician_id: Number(decodedId) },
         });
 
         if (existingTech) {
           await editTechnician({
-            userid,
+            userid: Number(decodedId),
             tx,
             maxRequestsAllowed: maxRequestsAllowed ?? 10,
             serviceDeptId: serviceDeptId ?? 1,
           });
           await editDeptPerson({
-            userid,
+            userid: Number(decodedId),
             tx,
             serviceDeptId: serviceDeptId ?? 1,
             isHod: false,
           });
         } else {
           await addTechnician({
-            userid,
+            userid: Number(decodedId),
             tx,
             maxRequestsAllowed: maxRequestsAllowed ?? 10,
             serviceDeptId: serviceDeptId ?? 1,
           });
           await addDeptPerson({
-            userid,
+            userid: Number(decodedId),
             tx,
             serviceDeptId: serviceDeptId ?? 1,
             fromDate: new Date(),
@@ -99,13 +101,10 @@ export default async function editUser({
           });
         }
       }
-
-      // success from transaction
-      return { type: "success", message: "User updated successfully" };
     });
 
     revalidatePath("/admin/users");
-    return result; // ✅ Return transaction result to frontend
+    return { type: "success", message: "User updated successfully" };
   } catch (err: any) {
     console.error("Update user failed:", err);
     return { type: "error", message: err?.message || "Something went wrong" };

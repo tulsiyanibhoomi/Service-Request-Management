@@ -11,6 +11,13 @@ export async function GET() {
     const total = await prisma.service_request.count({
       where: {
         assigned_to_technician_id: TECHNICIAN_ID,
+        service_request_status: {
+          service_request_status_name: {
+            not: {
+              in: ["Cancelled", "Declined"],
+            },
+          },
+        },
       },
     });
     const assigned = await prisma.service_request.count({
@@ -33,7 +40,9 @@ export async function GET() {
       where: {
         assigned_to_technician_id: TECHNICIAN_ID,
         service_request_status: {
-          service_request_status_name: "Completed",
+          service_request_status_name: {
+            in: ["Completed", "Closed"],
+          },
         },
       },
     });

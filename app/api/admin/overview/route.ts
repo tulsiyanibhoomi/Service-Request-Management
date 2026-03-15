@@ -3,7 +3,17 @@ import { NextResponse } from "next/server";
 
 export async function GET() {
   try {
-    const total = await prisma.service_request.count();
+    const total = await prisma.service_request.count({
+      where: {
+        service_request_status: {
+          service_request_status_name: {
+            not: {
+              in: ["Declined", "Cancelled"],
+            },
+          },
+        },
+      },
+    });
     const pending = await prisma.service_request.count({
       where: {
         service_request_status: {
@@ -14,14 +24,18 @@ export async function GET() {
     const in_progress = await prisma.service_request.count({
       where: {
         service_request_status: {
-          service_request_status_name: "In Progress",
+          service_request_status_name: {
+            in: ["In Progress", "Approved"],
+          },
         },
       },
     });
     const completed = await prisma.service_request.count({
       where: {
         service_request_status: {
-          service_request_status_name: "Completed",
+          service_request_status_name: {
+            in: ["Completed", "Closed"],
+          },
         },
       },
     });

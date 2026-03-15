@@ -5,6 +5,7 @@ import Table from "@/app/components/ui/table/table";
 import SkeletonCard from "@/app/components/utils/skeletoncard";
 import CustomError from "@/app/components/utils/error";
 import { ServiceRequest } from "@/app/types/requests";
+import { encodeId } from "@/app/components/utils/url";
 
 export default function Requests() {
   const [requests, setRequests] = useState<ServiceRequest[] | null>(null);
@@ -49,7 +50,7 @@ export default function Requests() {
       <Table
         data={requests}
         rowKey="id"
-        rowClickRoute={(row) => `/admin/requests/${row.id}`}
+        rowClickRoute={(row) => `/admin/requests/${encodeId(row.id)}`}
         columns={[
           "no",
           "title",

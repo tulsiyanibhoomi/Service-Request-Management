@@ -20,8 +20,12 @@ import AddEditDeptModal from "@/app/components/ui/modals/addeditdept";
 import editServiceDepartment from "@/app/actions/departments/editDepartment";
 import deleteDepartment from "@/app/actions/departments/deleteDepartment";
 import DetailsHeader from "@/app/components/ui/admin-details/detailsheader";
-import { useFlash } from "@/app/context/FlashContext";
-import { showErrorAlert } from "@/app/components/utils/showAlert";
+import {
+  showErrorAlert,
+  showPositiveAlert,
+} from "@/app/components/utils/showAlert";
+import Table from "@/app/components/ui/table/table";
+import { decodeId, encodeId } from "@/app/components/utils/url";
 
 type ServiceType = {
   id: number;
@@ -41,16 +45,21 @@ type DepartmentDetail = {
 };
 
 export default function DepartmentDetailPage() {
-  const { id } = useParams();
+  const params = useParams<{ id: string }>();
+  const id = params?.id;
+
+  const decodedId = id ? decodeId(id) : null;
   const [department, setDepartment] = useState<DepartmentDetail | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [isDeleteOpen, setIsDeleteOpen] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
 
-  const router = useRouter();
+  const [technicians, setTechnicians] = useState<any[]>([]);
+  const [techLoading, setTechLoading] = useState(true);
+  const [techError, setTechError] = useState<string | null>(null);
 
-  const { setFlash } = useFlash();
+  const router = useRouter();
 
   const fetchDepartment = async () => {
     setLoading(true);
@@ -68,15 +77,33 @@ export default function DepartmentDetailPage() {
     }
   };
 
+  const fetchTechnicians = async () => {
+    setTechLoading(true);
+    setTechError(null);
+    try {
+      const res = await fetch(`/api/departments/${id}/technicians`);
+      if (!res.ok) throw new Error("Failed to fetch technicians");
+      const data = await res.json();
+      setTechnicians(data);
+    } catch (err: any) {
+      console.error(err);
+      setTechError(err.message || "Failed to fetch technicians");
+    } finally {
+      setTechLoading(false);
+    }
+  };
+
   useEffect(() => {
     fetchDepartment();
+    if (id) fetchTechnicians();
   }, [id]);
 
   const handleDeleteServiceType = async (serviceTypeId: number) => {
     try {
       const result = await deleteServiceType(serviceTypeId, Number(id));
       await fetchDepartment();
-      setFlash({ message: result.message, type: result.type });
+      if (result.type === "error") showErrorAlert(result.message);
+      if (result.type === "success") showPositiveAlert(result.message);
     } catch (err: any) {
       console.error(err);
       showErrorAlert(err.message || "Failed to delete service type");
@@ -85,8 +112,9 @@ export default function DepartmentDetailPage() {
 
   const handleDeleteDepartment = async () => {
     try {
-      const result = await deleteDepartment(Number(id));
-      setFlash({ message: result.message, type: result.type });
+      const result = await deleteDepartment(Number(decodedId));
+      if (result.type === "error") showErrorAlert(result.message);
+      if (result.type === "success") showPositiveAlert(result.message);
 
       router.push("/admin/departments");
     } catch (err: any) {
@@ -146,6 +174,36 @@ export default function DepartmentDetailPage() {
         onRefresh={fetchDepartment}
       />
 
+      <div className="mt-8 p-6 bg-white rounded-lg shadow-md border border-gray-200">
+        <div className="flex items-center justify-between mb-4">
+          <h2 className="text-xl font-semibold">Technicians</h2>
+          <button
+            onClick={() => router.push(`/admin/users/add`)}
+            className="px-4 py-2 bg-green-600 text-white rounded-lg shadow hover:bg-green-700 transition"
+          >
+            Add Technician
+          </button>
+        </div>{" "}
+        {techLoading ? (
+          <SkeletonCard />
+        ) : techError ? (
+          <CustomError message={techError} />
+        ) : technicians.length === 0 ? (
+          <p className="text-gray-500">
+            No technicians associated with this department.
+          </p>
+        ) : (
+          <Table
+            data={technicians}
+            rowKey="id"
+            columns={["name", "email", "max_requests_allowed"]}
+            enableSearch={false}
+            rowClickRoute={(row) => `/admin/users/${encodeId(row.id)}`}
+            showEditDelete={false}
+          />
+        )}
+      </div>
+
       <ConfirmDeleteModal
         isOpen={isDeleteOpen}
         onClose={() => setIsDeleteOpen(false)}
@@ -170,7 +228,8 @@ export default function DepartmentDetailPage() {
           );
           setIsModalOpen(false);
           await fetchDepartment();
-          setFlash({ message: result.message, type: result.type });
+          if (result.type === "error") showErrorAlert(result.message);
+          if (result.type === "success") showPositiveAlert(result.message);
         }}
       />
     </div>

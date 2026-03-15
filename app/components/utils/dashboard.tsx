@@ -3,6 +3,7 @@ import Table from "../ui/table/table";
 import Link from "next/link";
 import { ROUTES } from "@/app/config/routes";
 import { User } from "@/app/types/user";
+import { encodeId } from "./url";
 
 type TableAction<T> = {
   name: string;
@@ -107,7 +108,11 @@ export default function CommonDashboard<T>({
               columns={tableColumns}
               rowKey={tableRowKey as string}
               rowActions={tableRowActions}
-              rowClickRoute={(row) => `${redirectURL}/${row[tableRowKey]}`}
+              rowClickRoute={(row) => {
+                const url = `${redirectURL}/${encodeId(row[tableRowKey])}`;
+                return url;
+              }}
+              enableSearch={false}
             />
           ) : (
             <div className="p-6 text-center text-gray-500">

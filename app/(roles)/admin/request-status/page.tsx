@@ -7,7 +7,10 @@ import AddEditServiceStatusModal from "@/app/components/ui/modals/addeditreqstat
 import deleteRequestStatus from "@/app/actions/request-status/deleteStatus";
 import addServiceRequestStatus from "@/app/actions/request-status/addStatus";
 import editServiceRequestStatus from "@/app/actions/request-status/editStatus";
-import { useFlash } from "@/app/context/FlashContext";
+import {
+  showErrorAlert,
+  showPositiveAlert,
+} from "@/app/components/utils/showAlert";
 
 type RequestStatus = {
   id: number;
@@ -21,8 +24,6 @@ export default function Requests() {
   const [editingStatus, setEditingStatus] = useState<RequestStatus | null>(
     null,
   );
-
-  const { setFlash } = useFlash();
 
   const fetchStatus = async () => {
     try {
@@ -50,13 +51,15 @@ export default function Requests() {
           data.statusName,
           data.description,
         );
-        setFlash({ message: result.message, type: result.type });
+        if (result.type === "error") showErrorAlert(result.message);
+        if (result.type === "success") showPositiveAlert(result.message);
       } else {
         const result = await addServiceRequestStatus(
           data.statusName,
           data.description || null,
         );
-        setFlash({ message: result.message, type: result.type });
+        if (result.type === "error") showErrorAlert(result.message);
+        if (result.type === "success") showPositiveAlert(result.message);
       }
       setModalOpen(false);
       setEditingStatus(null);
@@ -96,7 +99,8 @@ export default function Requests() {
         onEdit={handleEdit}
         onDelete={async (id: number) => {
           const result = await deleteRequestStatus(id);
-          setFlash({ message: result.message, type: result.type });
+          if (result.type === "error") showErrorAlert(result.message);
+          if (result.type === "success") showPositiveAlert(result.message);
           fetchStatus();
           return { success: true, message: result.message };
         }}

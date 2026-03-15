@@ -37,7 +37,7 @@ export async function GET(req: Request, context: { params: { id: string } }) {
 
     const activeStatuses = await prisma.service_request_status.findMany({
       where: {
-        service_request_status_name: { in: ["Assigned", "In Progress"] },
+        service_request_status_name: { in: ["Approved", "In Progress"] },
       },
       select: { service_request_status_id: true },
     });

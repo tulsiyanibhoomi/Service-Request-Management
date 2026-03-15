@@ -6,7 +6,7 @@ import ConfirmDeleteModal from "@/app/components/ui/modals/deleteconfirm";
 import AddEditServiceTypeModal from "./modals/addeditservicetype";
 import addServiceType from "@/app/actions/service-types/addType";
 import editServiceType from "@/app/actions/service-types/editType";
-import { useFlash } from "@/app/context/FlashContext";
+import { showErrorAlert, showPositiveAlert } from "../utils/showAlert";
 
 type ServiceType = {
   id: number;
@@ -49,8 +49,6 @@ export default function ServiceTypes({
     setDeleteId(null);
     setIsDeleteOpen(false);
   };
-
-  const { setFlash } = useFlash();
 
   return (
     <div className="mt-6 bg-white border border-gray-100 rounded-xl shadow-sm p-5">
@@ -150,15 +148,17 @@ export default function ServiceTypes({
               data.name,
               data.description,
             );
+            if (result.type === "error") showErrorAlert(result.message);
             setEditingItem(undefined);
-            setFlash({ message: result.message, type: result.type });
+            if (result.type === "success") showPositiveAlert(result.message);
           } else {
             const result = await addServiceType(
               deptId,
               data.name,
               data.description,
             );
-            setFlash({ message: result.message, type: result.type });
+            if (result.type === "error") showErrorAlert(result.message);
+            if (result.type === "success") showPositiveAlert(result.message);
           }
           setIsAddOpen(false);
           onRefresh?.();

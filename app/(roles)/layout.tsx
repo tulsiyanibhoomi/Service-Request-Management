@@ -5,9 +5,8 @@ import Sidebar from "../components/layout/sidebar";
 import { usePathname, useRouter } from "next/navigation";
 import SkeletonCard from "@/app/components/utils/skeletoncard";
 import CustomError from "@/app/components/utils/error";
-import { notify } from "../utils/notify";
 import ConfirmLogoutModal from "@/app/components/ui/modals/logoutconfirm";
-import { FlashProvider } from "../context/FlashContext";
+import NotificationsDropdown from "../components/utils/notifications";
 
 interface CurrentUser {
   id: string;
@@ -34,6 +33,8 @@ export default function RolesLayout({
     return res.json();
   }
 
+  const [apiUrl, setApiUrl] = useState("/api/notifications");
+
   useEffect(() => {
     const fetchUser = async () => {
       setLoading(true);
@@ -50,6 +51,8 @@ export default function RolesLayout({
         }
 
         setUser(data.user);
+        const roleLower = data.user.role.toLowerCase();
+        setApiUrl(`/api/notifications/${roleLower}`);
       } catch (err: any) {
         console.error(err);
         setError(err.message || "Failed to fetch user");
@@ -78,48 +81,53 @@ export default function RolesLayout({
   if (!user) return <CustomError message="User not available" />;
 
   return (
-    <FlashProvider>
-      <div className="min-h-screen bg-gray-50">
-        <header className="fixed top-0 left-0 right-0 h-14 bg-white shadow-sm flex items-center justify-between px-6 border-b z-20">
-          <div className="flex items-center w-32 border-r border-gray-300 pr-4">
-            <div className="text-lg font-semibold text-gray-800">
-              {user.role}
-            </div>
-          </div>
-
-          <div className="text-lg font-semibold text-gray-800">
-            Service Request Management System
-          </div>
-
-          <div className="flex items-center gap-4">
-            <button className="px-3 py-1 rounded hover:bg-gray-100 transition">
-              Notifications
-            </button>
-            <div className="font-medium text-gray-700">{user.fullname}</div>
-            <button
-              onClick={() => setIsLogoutOpen(true)}
-              className="px-3 py-1 rounded bg-red-500 text-white hover:bg-red-600 transition"
-            >
-              Logout
-            </button>
-          </div>
-        </header>
-        ={" "}
-        <div className="flex">
-          <aside className="fixed top-14 left-0 h-[calc(100vh-56px)] w-64 bg-white shadow-md flex flex-col">
-            <Sidebar role={user.role} />
-          </aside>
-
-          <main className="ml-64 mt-14 flex-1 p-6 overflow-auto h-[calc(100vh-56px)]">
-            {children}
-          </main>
+    <div className="min-h-screen bg-gray-50">
+      <header className="fixed top-0 left-0 right-0 h-14 bg-white shadow-sm flex items-center justify-between px-6 border-b z-20">
+        <div className="flex items-center w-32 border-r border-gray-300 pr-4">
+          <div className="text-lg font-semibold text-gray-800">{user.role}</div>
         </div>
-        <ConfirmLogoutModal
-          isOpen={isLogoutOpen}
-          onClose={() => setIsLogoutOpen(false)}
-          onConfirm={handleLogout}
-        />
+
+        <div className="text-lg font-semibold text-gray-800">
+          Service Request Management System
+        </div>
+
+        <div className="flex items-center gap-4">
+          {user.role.toLowerCase() !== "admin" ? (
+            <NotificationsDropdown apiUrl={apiUrl} />
+          ) : null}
+          {user.role.toLowerCase() !== "admin" ? (
+            <button
+              onClick={() => router.push(`/${user.role.toLowerCase()}/profile`)}
+              className="font-medium text-gray-700 hover:text-blue-600 hover:underline transition"
+            >
+              {user.fullname}
+            </button>
+          ) : (
+            <div className="font-medium text-gray-700">{user.fullname}</div>
+          )}
+          <button
+            onClick={() => setIsLogoutOpen(true)}
+            className="px-3 py-1 rounded bg-red-500 text-white hover:bg-red-600 transition"
+          >
+            Logout
+          </button>
+        </div>
+      </header>
+      ={" "}
+      <div className="flex">
+        <aside className="fixed top-14 left-0 h-[calc(100vh-56px)] w-64 bg-white shadow-md flex flex-col">
+          <Sidebar role={user.role} />
+        </aside>
+
+        <main className="ml-64 mt-14 flex-1 p-6 overflow-auto h-[calc(100vh-56px)]">
+          {children}
+        </main>
       </div>
-    </FlashProvider>
+      <ConfirmLogoutModal
+        isOpen={isLogoutOpen}
+        onClose={() => setIsLogoutOpen(false)}
+        onConfirm={handleLogout}
+      />
+    </div>
   );
 }

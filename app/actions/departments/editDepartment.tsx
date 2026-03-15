@@ -12,7 +12,7 @@ export default async function editServiceDepartment(
   try {
     await prisma.service_dept.update({
       where: {
-        service_dept_id: dept_id,
+        service_dept_id: Number(dept_id),
       },
       data: {
         service_dept_name: dept_name,
@@ -26,6 +26,7 @@ export default async function editServiceDepartment(
     return { type: "success", message: "Department updated successfully" };
   } catch (error) {
     console.error("Edit service dept failed:", error);
-    return { type: "error", message: "Department updated successfully" };
+
+    return { type: "error", message: "Something went wrong" };
   }
 }

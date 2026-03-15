@@ -20,6 +20,13 @@ export async function GET() {
 
     const total = await prisma.service_request.count({
       where: {
+        service_request_status: {
+          service_request_status_name: {
+            not: {
+              in: ["Cancelled", "Declined"],
+            },
+          },
+        },
         service_request_type: {
           dept_id: hodDept?.service_dept_id,
         },
@@ -32,7 +39,9 @@ export async function GET() {
           dept_id: hodDept?.service_dept_id,
         },
         service_request_status: {
-          service_request_status_name: "Pending",
+          service_request_status_name: {
+            in: ["Pending", "Approved"],
+          },
         },
       },
     });
@@ -54,7 +63,9 @@ export async function GET() {
           dept_id: hodDept?.service_dept_id,
         },
         service_request_status: {
-          service_request_status_name: "Completed",
+          service_request_status_name: {
+            in: ["Completed", "Closed"],
+          },
         },
       },
     });

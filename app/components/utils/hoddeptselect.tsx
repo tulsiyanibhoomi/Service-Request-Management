@@ -21,19 +21,13 @@ export default function HodDeptSelect({
   onChange,
 }: HodDeptSelectProps) {
   const router = useRouter();
-  const [selected, setSelected] = useState<number | "add_new" | undefined>(
-    selectedDeptId,
-  );
+  const [selected, setSelected] = useState<number | undefined>(selectedDeptId);
 
   useEffect(() => {
     setSelected(selectedDeptId);
   }, [selectedDeptId]);
 
-  const handleSelect = (value: number | "add_new") => {
-    if (value === "add_new") {
-      router.push("/admin/dept/add");
-      return;
-    }
+  const handleSelect = (value: number) => {
     setSelected(value);
     onChange(value);
   };
@@ -42,7 +36,7 @@ export default function HodDeptSelect({
     <div className="w-full relative">
       <Listbox value={selected} onChange={handleSelect}>
         <ListboxButton className="w-full border rounded-lg px-3 py-2 text-left focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white">
-          {selected && selected !== "add_new"
+          {selected
             ? departments.find((d) => d.id === selected)?.name
             : "Select Department"}
         </ListboxButton>
@@ -61,17 +55,6 @@ export default function HodDeptSelect({
               {dept.name}
             </ListboxOption>
           ))}
-
-          <ListboxOption
-            value="add_new"
-            className={({ active }) =>
-              `cursor-pointer select-none relative py-2 px-4 font-bold ${
-                active ? "bg-blue-600 text-white" : "bg-blue-50 text-blue-700"
-              }`
-            }
-          >
-            + ADD NEW DEPARTMENT
-          </ListboxOption>
         </ListboxOptions>
       </Listbox>
     </div>

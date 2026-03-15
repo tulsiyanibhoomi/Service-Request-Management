@@ -10,6 +10,15 @@ export const showPositiveAlert = async (message: string) => {
   });
 };
 
+export const showInfoAlert = async (message: string) => {
+  return Swal.fire({
+    position: "top-end",
+    title: message,
+    showConfirmButton: false,
+    timer: 1500,
+  });
+};
+
 export const showErrorAlert = async (message: string) => {
   return Swal.fire({
     icon: "error",

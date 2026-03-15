@@ -14,7 +14,11 @@ import DetailsHeader from "@/app/components/ui/admin-details/detailsheader";
 import TechnicianStatistics from "@/app/components/ui/admin-details/techstat";
 import HodStatistics from "@/app/components/ui/admin-details/hodstat";
 import EmployeeStatistics from "@/app/components/ui/admin-details/employeestat";
-import { useFlash } from "@/app/context/FlashContext";
+import {
+  showErrorAlert,
+  showPositiveAlert,
+} from "@/app/components/utils/showAlert";
+import { decodeId } from "@/app/components/utils/url";
 
 type UserStatistics = {
   completedRequests?: number;
@@ -39,18 +43,20 @@ type UserDetail = {
   created: string;
   modified: string;
   statistics?: UserStatistics;
+  departmentName?: string;
 };
 
 export default function UserDetailPage() {
-  const { id } = useParams();
+  const params = useParams<{ id: string }>();
+  const id = params?.id;
+
+  const decodedId = id ? decodeId(id) : null;
   const router = useRouter();
 
   const [user, setUser] = useState<UserDetail | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [isDeleteOpen, setIsDeleteOpen] = useState(false);
-
-  const { setFlash } = useFlash();
 
   const fetchUser = async () => {
     setLoading(true);
@@ -74,10 +80,11 @@ export default function UserDetailPage() {
 
   const handleDeleteUser = async () => {
     try {
-      const result = await deleteUser(Number(id));
-      setFlash({ message: result.message, type: result.type });
+      const result = await deleteUser(Number(decodedId));
 
+      if (result.type === "error") showErrorAlert(result.message);
       router.push("/admin/users");
+      if (result.type === "success") showPositiveAlert(result.message);
     } catch (err: any) {
       console.error("Failed to delete user:", err);
     }
@@ -97,6 +104,7 @@ export default function UserDetailPage() {
     <div className="p-6 max-w-6xl mx-auto">
       <DetailsHeader
         name={user.fullname}
+        departmentName={user.departmentName}
         onEdit={handleEdit}
         onDelete={() => setIsDeleteOpen(true)}
       />

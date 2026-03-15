@@ -5,6 +5,7 @@ import Table from "@/app/components/ui/table/table";
 import SkeletonCard from "@/app/components/utils/skeletoncard";
 import CustomError from "@/app/components/utils/error";
 import { ServiceRequest } from "@/app/types/requests";
+import { encodeId } from "@/app/components/utils/url";
 
 export default function TechnicianRequests() {
   const [requests, setRequests] = useState<ServiceRequest[] | null>(null);
@@ -44,21 +45,19 @@ export default function TechnicianRequests() {
 
   return (
     <div className="p-6 bg-gray-50 min-h-screen">
-      <div className="bg-white p-6 rounded-xl shadow">
-        <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-4 gap-4">
-          <h2 className="text-2xl font-semibold text-gray-800">Requests</h2>
-        </div>
+      <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-4 gap-4">
+        <h2 className="text-2xl font-semibold text-gray-800">Requests</h2>
+      </div>
 
-        <div className="overflow-x-auto">
-          <Table
-            data={requests}
-            columns={["no", "title", "type", "priority", "status"]}
-            rowKey="service_request_id"
-            rowClickRoute={(row) =>
-              `/technician/requests/${row.service_request_id}`
-            }
-          />
-        </div>
+      <div className="overflow-x-auto">
+        <Table
+          data={requests}
+          columns={["no", "title", "type", "priority", "status"]}
+          rowKey="service_request_id"
+          rowClickRoute={(row) =>
+            `/technician/requests/${encodeId(row.service_request_id)}`
+          }
+        />
       </div>
     </div>
   );

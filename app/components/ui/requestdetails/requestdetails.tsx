@@ -52,6 +52,11 @@ export default function RequestDetails({
     data.status === "Closed" ||
     data.status === "Declined";
 
+  const noActionHOD =
+    data.status === "Cancelled" ||
+    data.status === "Closed" ||
+    data.status === "Declined";
+
   return (
     <div className="min-h-screen bg-gray-50 p-6">
       <div className="rounded-3xl p-6 bg-gradient-to-r from-purple-600 to-indigo-600 mb-8 shadow-lg flex justify-between items-center">
@@ -75,7 +80,7 @@ export default function RequestDetails({
 
         <div className="space-y-6">
           <RequestStatus data={data} />
-          {!noAction && canDecide && (
+          {!noActionHOD && canDecide && (
             <HODAdminActions data={data} onAction={handleHODAdminAction} />
           )}
           {!noAction && role === "Employee" && <EmployeeActions data={data} />}

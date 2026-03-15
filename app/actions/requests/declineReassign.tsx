@@ -46,7 +46,7 @@ export async function declineReassignment({
       });
     });
     revalidatePath("/hod/requests");
-    return { type: "success", message: "Reruest for reassignment declined" };
+    return { type: "success", message: "Request for reassignment declined" };
   } catch (error) {
     console.error("Error declining reassignment:", error);
     return { type: "error", message: "Something went wrong" };

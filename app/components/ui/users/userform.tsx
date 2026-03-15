@@ -1,13 +1,13 @@
 "use client";
 
-import { useState, ChangeEvent } from "react";
+import { useState } from "react";
 import { useRouter } from "next/navigation";
 import TextInput from "./textinput";
 import SelectInput from "./selectinput";
-import HodDeptSelect from "../../utils/hoddeptselect";
 import addUser from "@/app/actions/users/addUser";
 import editUser from "@/app/actions/users/editUser";
 import RoleFields from "./rolefields";
+import { showErrorAlert, showPositiveAlert } from "../../utils/showAlert";
 
 export type Role = { id: number; rolename: string };
 export type Department = { id: number; name: string };
@@ -27,7 +27,6 @@ interface UserFormProps {
   roles: Role[];
   departments: Department[];
   initialUser?: UserData | null;
-  setFlash: (flash: { message: string; type: string }) => void;
   currentUserRole: "admin" | "hod";
   currentUserDeptId?: number;
 }
@@ -37,7 +36,6 @@ export default function UserForm({
   roles,
   departments,
   initialUser,
-  setFlash,
   currentUserRole,
   currentUserDeptId,
 }: UserFormProps) {
@@ -100,18 +98,27 @@ export default function UserForm({
       setSubmitting(true);
       let result;
       if (id) {
-        result = await editUser({ userid: Number(id), ...user });
+        result = await editUser({ userid: id, ...user });
       } else {
         result = await addUser(user);
       }
       if (currentUserRole === "admin") {
-        if (result.type === "success") router.push("/admin/users");
+        if (result.type === "success") {
+          router.push("/admin/users");
+        } else {
+          showErrorAlert(result.message);
+        }
       } else {
-        if (result.type === "success") router.push("/hod/technicians");
+        if (result.type === "success") {
+          router.push("/hod/technicians");
+        } else {
+          showErrorAlert(result.message);
+        }
       }
+      showPositiveAlert(result.message);
     } catch (err: any) {
-      setFlash({ message: err.message, type: "error" });
       console.error("Failed to save user:", err);
+      showErrorAlert(err.message);
     } finally {
       setSubmitting(false);
     }

@@ -5,6 +5,7 @@ import Table from "@/app/components/ui/table/table";
 import SkeletonCard from "@/app/components/utils/skeletoncard";
 import CustomError from "@/app/components/utils/error";
 import { useRouter } from "next/navigation";
+import { encodeId } from "@/app/components/utils/url";
 
 interface Technician {
   technicianId: number;
@@ -74,32 +75,32 @@ export default function HODTechnicians() {
 
   return (
     <div className="p-6 bg-gray-50 min-h-screen">
-      <div className="bg-white p-6 rounded-xl shadow">
-        <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-4 gap-4">
-          <h2 className="text-2xl font-semibold text-gray-800">Technicians</h2>
-          <button
-            onClick={() => router.push("/hod/technicians/add")}
-            className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition"
-          >
-            Add Technician
-          </button>
-        </div>
+      <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-4 gap-4">
+        <h2 className="text-2xl font-semibold text-gray-800">Technicians</h2>
+        <button
+          onClick={() => router.push("/hod/technicians/add")}
+          className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition"
+        >
+          Add Technician
+        </button>
+      </div>
 
-        <div className="overflow-x-auto">
-          <Table
-            data={technicians}
-            columns={[
-              "fullname",
-              "username",
-              "email",
-              "max_requests_allowed",
-              "currently_assigned",
-              "availability_status",
-            ]}
-            rowKey="technicianId"
-            rowClickRoute={(row) => `/hod/technicians/${row.technicianId}`}
-          />
-        </div>
+      <div className="overflow-x-auto">
+        <Table
+          data={technicians}
+          columns={[
+            "fullname",
+            "username",
+            "email",
+            "max_requests_allowed",
+            "currently_assigned",
+            "availability_status",
+          ]}
+          rowKey="technicianId"
+          rowClickRoute={(row) =>
+            `/hod/technicians/${encodeId(row.technicianId)}`
+          }
+        />
       </div>
     </div>
   );

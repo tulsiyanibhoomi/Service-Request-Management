@@ -11,6 +11,19 @@ export async function GET() {
     const total = await prisma.service_request.count({
       where: {
         employee_id: EMPLOYEE_ID,
+        service_request_status: {
+          service_request_status_name: {
+            not: {
+              in: ["Cancelled", "Declined"],
+            },
+          },
+        },
+      },
+    });
+
+    const totalAll = await prisma.service_request.count({
+      where: {
+        employee_id: EMPLOYEE_ID,
       },
     });
 
@@ -27,7 +40,9 @@ export async function GET() {
       where: {
         employee_id: EMPLOYEE_ID,
         service_request_status: {
-          service_request_status_name: "In Progress",
+          service_request_status_name: {
+            in: ["In Progress", "Approved"],
+          },
         },
       },
     });
@@ -36,13 +51,16 @@ export async function GET() {
       where: {
         employee_id: EMPLOYEE_ID,
         service_request_status: {
-          service_request_status_name: "Completed",
+          service_request_status_name: {
+            in: ["Completed", "Closed"],
+          },
         },
       },
     });
 
     return NextResponse.json({
       total,
+      totalAll,
       pending,
       in_progress,
       completed,

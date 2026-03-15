@@ -6,7 +6,11 @@ import Table from "@/app/components/ui/table/table";
 import SkeletonCard from "@/app/components/utils/skeletoncard";
 import CustomError from "@/app/components/utils/error";
 import AddEditDeptModal from "@/app/components/ui/modals/addeditdept";
-import { useFlash } from "@/app/context/FlashContext";
+import {
+  showErrorAlert,
+  showPositiveAlert,
+} from "@/app/components/utils/showAlert";
+import { encodeId } from "@/app/components/utils/url";
 
 type Department = {
   service_dept_id: number;
@@ -24,8 +28,6 @@ export default function Departments() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
-
-  const { setFlash } = useFlash();
 
   async function fetchJson<T>(url: string): Promise<T> {
     const res = await fetch(url);
@@ -71,9 +73,9 @@ export default function Departments() {
 
       <Table
         data={departments}
-        rowKey="service_dept_id"
+        rowKey="id"
         columns={["name", "description", "email", "hod"]}
-        rowClickRoute={(row) => `/admin/departments/${row.id}`}
+        rowClickRoute={(row) => `/admin/departments/${encodeId(row.id)}`}
       />
 
       <AddEditDeptModal
@@ -87,7 +89,8 @@ export default function Departments() {
           );
           setIsModalOpen(false);
           await fetchDepartments();
-          setFlash({ message: result.message, type: result.type });
+          if (result.type === "error") showErrorAlert(result.message);
+          if (result.type === "success") showPositiveAlert(result.message);
         }}
       />
     </div>

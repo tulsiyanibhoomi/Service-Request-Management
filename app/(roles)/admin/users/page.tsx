@@ -5,6 +5,7 @@ import Table from "@/app/components/ui/table/table";
 import SkeletonCard from "@/app/components/utils/skeletoncard";
 import CustomError from "@/app/components/utils/error";
 import { useRouter } from "next/navigation";
+import { encodeId } from "@/app/components/utils/url";
 
 type User = {
   userid: number;
@@ -84,7 +85,7 @@ export default function Users() {
         data={users}
         columns={["userid", "fullname", "username", "email", "roles"]}
         rowKey="userid"
-        rowClickRoute={(row) => `/admin/users/${row.userid}`}
+        rowClickRoute={(row) => `/admin/users/${encodeId(row.userid)}`}
       />
     </div>
   );

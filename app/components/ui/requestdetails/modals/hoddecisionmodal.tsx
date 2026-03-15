@@ -75,7 +75,9 @@ export default function HODDecisionModal({
     if (!showTechnicianSelect) return;
     try {
       setLoadingTechs(true);
-      const res = await fetch("/api/technician/list_id_name");
+      const res = await fetch(
+        `/api/technician/list_id_name?deptId=${request.dept_id}`,
+      );
       if (!res.ok) throw new Error("Failed to load technicians");
       const data = await res.json();
       setTechnicians(data);
@@ -92,7 +94,7 @@ export default function HODDecisionModal({
     Promise.all([fetchCurrentUser(), fetchTechnicians()]).finally(() =>
       setLoading(false),
     );
-  }, [showTechnicianSelect]);
+  }, [showTechnicianSelect, request.dept_id]);
 
   const handleDeclineReassignment = async () => {
     if (!userId) {
@@ -112,6 +114,7 @@ export default function HODDecisionModal({
       if (result.type === "error") showErrorAlert(result.message);
       onClose();
       if (result.type === "success") showPositiveAlert(result.message);
+      router.push("/hod/requests");
     } catch (err) {
       console.error(err);
       setFormError("Something went wrong. Please try again.");

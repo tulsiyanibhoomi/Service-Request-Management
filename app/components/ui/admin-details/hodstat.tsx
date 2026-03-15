@@ -20,10 +20,10 @@ export default function HodStatistics({ stats }: Props) {
   const requestData = [
     { name: "Total Requests", value: stats.totalDeptRequests || 0 },
     { name: "Pending", value: stats.pendingRequests || 0 },
-    { name: "Approved", value: stats.approvedRequests || 0 },
     { name: "Active", value: stats.activeRequests || 0 },
     { name: "Completed", value: stats.completedRequests || 0 },
     { name: "Closed", value: stats.closedRequests || 0 },
+    { name: "Declined", value: stats.declinedRequests || 0 },
   ];
 
   const technicianData = [

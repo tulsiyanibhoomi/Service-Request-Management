@@ -9,7 +9,14 @@ export async function GET() {
 
   try {
     const requests = await prisma.service_request.findMany({
-      where: { employee_id: EMPLOYEE_ID },
+      where: {
+        employee_id: EMPLOYEE_ID,
+        service_request_status: {
+          service_request_status_name: {
+            not: "Cancelled",
+          },
+        },
+      },
       orderBy: { submitted_at: "desc" },
       select: {
         service_request_id: true,

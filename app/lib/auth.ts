@@ -1,29 +1,7 @@
-import { promisify } from "util";
 import { prisma } from "./prisma";
-import crypto from "crypto";
 import { cookies } from "next/headers";
-import { signToken, verifyToken } from "./jwt";
+import { verifyToken } from "./jwt";
 import bcrypt from "bcryptjs";
-
-const scryptAsync = promisify(crypto.scrypt);
-const KEY_LENGTH = 64;
-
-// export async function verifyPassword(
-//   password: string,
-//   hash: string,
-//   salt: string,
-// ) {
-//   if (salt === "mysaltvalue") {
-//     return password === hash;
-//   }
-//   const derivedKey = (await scryptAsync(password, salt, KEY_LENGTH)) as Buffer;
-//   return crypto.timingSafeEqual(Buffer.from(hash, "hex"), derivedKey);
-// }
-
-// export async function hashPassword(password: string, salt: any) {
-//   const derivedKey = (await scryptAsync(password, salt, KEY_LENGTH)) as Buffer;
-//   return { salt, hash: derivedKey.toString("hex") };
-// }
 
 export async function verifyPassword(password: string, storedHash: string) {
   const isMatch = await bcrypt.compare(password, storedHash);
@@ -38,7 +16,7 @@ export async function hashPassword(password: string) {
 export async function login(email: string, password: string) {
   try {
     const user = await prisma.users.findUnique({
-      where: { email },
+      where: { email, isactive: true },
       include: {
         user_role: {
           include: {
@@ -47,33 +25,12 @@ export async function login(email: string, password: string) {
         },
       },
     });
-
     if (!user) {
       return { success: false, error: "Email doesn't exist" };
     }
-
     const isValid = await verifyPassword(password, user.password);
-
     if (!isValid) return { success: false, error: "Invalid credentials" };
-
     const roleName = user.user_role[0]?.role.rolename || "user";
-
-    const token = signToken({
-      id: user.userid,
-      email: user.email,
-      role: roleName,
-    });
-
-    const cookieStore = await cookies();
-    cookieStore.set({
-      name: "token",
-      value: token,
-      httpOnly: true,
-      secure: process.env.NODE_ENV === "production",
-      sameSite: "lax",
-      maxAge: 60 * 60 * 24 * 7,
-    });
-
     return {
       success: true,
       user: {

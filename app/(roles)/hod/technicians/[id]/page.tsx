@@ -16,6 +16,7 @@ import {
   showErrorAlert,
   showPositiveAlert,
 } from "@/app/components/utils/showAlert";
+import { decodeId } from "@/app/components/utils/url";
 
 type UserStatistics = {
   completedRequests?: number;
@@ -39,7 +40,10 @@ type UserDetail = {
 };
 
 export default function UserDetailPage() {
-  const { id } = useParams();
+  const params = useParams<{ id: string }>();
+  const id = params?.id;
+
+  const decodedId = id ? decodeId(id) : null;
   const router = useRouter();
 
   const [user, setUser] = useState<UserDetail | null>(null);
@@ -69,7 +73,7 @@ export default function UserDetailPage() {
 
   const handleDeleteUser = async () => {
     try {
-      const result = await deleteUser(Number(id));
+      const result = await deleteUser(Number(decodedId));
       if (result.type === "error") showErrorAlert(result.message);
       router.push("/hod/technicians");
       if ((result.type = "success")) showPositiveAlert(result.message);

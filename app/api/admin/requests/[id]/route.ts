@@ -1,13 +1,15 @@
 "use server";
 
+import { decodeId } from "@/app/components/utils/url";
 import { prisma } from "@/app/lib/prisma";
 import { NextResponse } from "next/server";
 
 export async function GET(req: Request, context: { params: { id: string } }) {
   try {
-    const { id } = await context.params;
+    let { id } = await context.params;
+    const numericId = decodeId(id);
 
-    if (!id) {
+    if (!numericId) {
       return NextResponse.json(
         { message: "Request ID is required" },
         { status: 400 },
@@ -15,7 +17,7 @@ export async function GET(req: Request, context: { params: { id: string } }) {
     }
 
     const request = await prisma.service_request.findUnique({
-      where: { service_request_id: Number(id) },
+      where: { service_request_id: Number(numericId) },
       include: {
         users: { select: { userid: true, username: true, fullname: true } },
         service_request_status: {
@@ -38,7 +40,7 @@ export async function GET(req: Request, context: { params: { id: string } }) {
     });
 
     const statusHistory = await prisma.service_request_status_history.findMany({
-      where: { request_id: Number(id) },
+      where: { request_id: Number(numericId) },
       orderBy: { changed_at: "asc" },
       include: {
         service_request_status: {
@@ -85,6 +87,7 @@ export async function GET(req: Request, context: { params: { id: string } }) {
       type: request.service_request_type?.service_type_name ?? "N/A",
       department:
         request.service_request_type?.service_dept?.service_dept_name ?? "N/A",
+      dept_id: request.service_request_type.dept_id,
       priority: request.priority_level,
       status:
         request.service_request_status?.service_request_status_name ?? "N/A",

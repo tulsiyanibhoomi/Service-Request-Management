@@ -1,10 +1,12 @@
+import { decodeId } from "@/app/components/utils/url";
 import { prisma } from "@/app/lib/prisma";
 import { NextResponse } from "next/server";
 
 export async function GET(req: Request, context: { params: { id: string } }) {
   const { id } = await context.params;
+  const numericId = decodeId(id);
 
-  if (!id) {
+  if (!numericId) {
     return NextResponse.json(
       { message: "User ID is required" },
       { status: 400 },
@@ -13,7 +15,7 @@ export async function GET(req: Request, context: { params: { id: string } }) {
 
   try {
     const user = await prisma.users.findUnique({
-      where: { userid: Number(id) },
+      where: { userid: Number(numericId) },
       include: {
         user_role: {
           include: {
@@ -39,7 +41,6 @@ export async function GET(req: Request, context: { params: { id: string } }) {
 
     if (roles.includes("Technician") && user.technician) {
       const technicianId = user.userid;
-
       const completedRequests = await prisma.service_request.count({
         where: {
           assigned_to_technician_id: technicianId,
@@ -89,8 +90,8 @@ export async function GET(req: Request, context: { params: { id: string } }) {
 
       statistics = {
         completedRequests,
-        activeRequests,
         closedRequests,
+        activeRequests,
         approvedRequests,
         maxAllowedRequests: user.technician.max_requests_allowed,
         averageCompletionDays: avgCompletion[0]?.avgDays || 0,
@@ -112,15 +113,24 @@ export async function GET(req: Request, context: { params: { id: string } }) {
         where: { employee_id: user.userid },
       });
 
+      const pendingRequests = await prisma.service_request.count({
+        where: {
+          employee_id: user.userid,
+          service_request_status: {
+            service_request_status_name: "Pending",
+          },
+        },
+      });
       const activeRequests = await prisma.service_request.count({
         where: {
           employee_id: user.userid,
           service_request_status: {
-            service_request_status_name: "In Progress",
+            service_request_status_name: {
+              in: ["In Progress", "Approved"],
+            },
           },
         },
       });
-
       const cancelledRequests = await prisma.service_request.count({
         where: {
           employee_id: user.userid,
@@ -129,7 +139,22 @@ export async function GET(req: Request, context: { params: { id: string } }) {
           },
         },
       });
-
+      const completedRequests = await prisma.service_request.count({
+        where: {
+          employee_id: user.userid,
+          service_request_status: {
+            service_request_status_name: "Completed",
+          },
+        },
+      });
+      const declinedRequests = await prisma.service_request.count({
+        where: {
+          employee_id: user.userid,
+          service_request_status: {
+            service_request_status_name: "Declined",
+          },
+        },
+      });
       const closedRequests = await prisma.service_request.count({
         where: {
           employee_id: user.userid,
@@ -141,8 +166,11 @@ export async function GET(req: Request, context: { params: { id: string } }) {
 
       statistics = {
         totalRequests,
+        pendingRequests,
         activeRequests,
         cancelledRequests,
+        declinedRequests,
+        completedRequests,
         closedRequests,
       };
     }
@@ -160,85 +188,84 @@ export async function GET(req: Request, context: { params: { id: string } }) {
           service_request_type: {
             dept_id: deptId,
           },
+          service_request_status: {
+            service_request_status_name: {
+              not: "Cancelled",
+            },
+          },
         },
       });
 
-      const pendingRequests = await prisma.service_request_status_history.count(
-        {
-          where: {
-            service_request_status: {
-              service_request_status_name: "Pending",
-            },
-            service_request: {
-              service_request_type: {
-                dept_id: deptId,
-              },
-            },
-          },
-        },
-      );
-
-      const approvedRequests =
-        await prisma.service_request_status_history.count({
-          where: {
-            service_request_status: {
-              service_request_status_name: "Approved",
-            },
-            service_request: {
-              service_request_type: {
-                dept_id: deptId,
-              },
-            },
-          },
-        });
-
-      const activeRequests = await prisma.service_request_status_history.count({
+      const pendingRequests = await prisma.service_request.count({
         where: {
           service_request_status: {
-            service_request_status_name: "In Progress",
+            service_request_status_name: "Pending",
           },
-          service_request: {
-            service_request_type: {
-              dept_id: deptId,
-            },
+          service_request_type: {
+            dept_id: deptId,
           },
         },
       });
 
-      const completedRequests =
-        await prisma.service_request_status_history.count({
-          where: {
-            service_request_status: {
-              service_request_status_name: "Completed",
-            },
-            service_request: {
-              service_request_type: {
-                dept_id: deptId,
-              },
+      const activeRequests = await prisma.service_request.count({
+        where: {
+          service_request_status: {
+            service_request_status_name: {
+              in: ["In Progress", "Approved"],
             },
           },
-        });
+          service_request_type: {
+            dept_id: deptId,
+          },
+        },
+      });
 
-      const closedRequests = await prisma.service_request_status_history.count({
+      const declinedRequests = await prisma.service_request.count({
+        where: {
+          service_request_status: {
+            service_request_status_name: "Declined",
+          },
+          service_request_type: {
+            dept_id: deptId,
+          },
+        },
+      });
+
+      const completedRequests = await prisma.service_request.count({
+        where: {
+          service_request_status: {
+            service_request_status_name: "Completed",
+          },
+          service_request_type: {
+            dept_id: deptId,
+          },
+        },
+      });
+
+      const closedRequests = await prisma.service_request.count({
         where: {
           service_request_status: {
             service_request_status_name: "Closed",
           },
-          service_request: {
-            service_request_type: {
-              dept_id: deptId,
-            },
+          service_request_type: {
+            dept_id: deptId,
           },
         },
       });
 
       const technicianCount = await prisma.technician.count({
+        where: { service_dept_id: deptId, users: { isactive: true } },
+      });
+
+      const dept = await prisma.service_dept.findUnique({
         where: { service_dept_id: deptId },
       });
 
+      departmentName = dept?.service_dept_name ?? null;
+
       statistics = {
         totalDeptRequests,
-        approvedRequests,
+        declinedRequests,
         completedRequests,
         closedRequests,
         activeRequests,

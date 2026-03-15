@@ -3,12 +3,14 @@
 import { prisma } from "@/app/lib/prisma";
 import { revalidatePath } from "next/cache";
 import cloudinary from "@/app/lib/cloudinary";
+import { decodeId } from "@/app/components/utils/url";
 
 export default async function editRequest(
-  requestId: number,
+  requestId: string,
   formData: FormData,
 ) {
   try {
+    const decodedId = decodeId(requestId);
     const existingFiles = JSON.parse(formData.get("existingFiles") as string);
 
     const uploadPaths: string[] = [];
@@ -29,7 +31,7 @@ export default async function editRequest(
     const finalAttachments = [...existingFiles, ...uploadPaths];
 
     await prisma.service_request.update({
-      where: { service_request_id: requestId },
+      where: { service_request_id: Number(decodedId) },
       data: {
         service_request_no: formData.get("serviceRequestNo") as string,
         service_request_title: formData.get("serviceRequestTitle") as string,

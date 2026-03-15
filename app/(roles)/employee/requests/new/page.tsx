@@ -17,7 +17,6 @@ import {
 const NewRequest = () => {
   const [removedFiles, setRemovedFiles] = useState<string[]>([]);
   const [submitLoading, setSubmitLoading] = useState(false);
-  const [submitError, setSubmitError] = useState<string | null>(null);
   const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
 
   const { formData, setFormData, requestTypes, loading, error, requestId } =
@@ -98,7 +97,6 @@ const NewRequest = () => {
     e.preventDefault();
     if (!validate()) return;
     setSubmitLoading(true);
-    setSubmitError(null);
 
     try {
       if (removedFiles.length > 0) {
@@ -131,7 +129,7 @@ const NewRequest = () => {
       data.append("existingFiles", JSON.stringify(allFiles));
 
       if (requestId) {
-        const result = await editRequest(Number(requestId), data);
+        const result = await editRequest(requestId, data);
         if (result.type === "error") await showErrorAlert(result.message);
         router.push("/employee/requests");
         if (result.type === "success") await showPositiveAlert(result.message);
@@ -143,7 +141,7 @@ const NewRequest = () => {
       }
     } catch (err: any) {
       console.error(err);
-      setSubmitError(err.message || "Something went wrong");
+      showErrorAlert(err.message);
     } finally {
       setSubmitLoading(false);
     }
@@ -154,8 +152,6 @@ const NewRequest = () => {
       <h2 className="text-3xl font-bold text-center mb-8 text-gray-800">
         {requestId ? "Edit Service Request" : "Raise a Service Request"}
       </h2>
-
-      {submitError && <CustomError message={submitError} />}
 
       <form
         onSubmit={handleSubmit}

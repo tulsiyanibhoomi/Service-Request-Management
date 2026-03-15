@@ -93,6 +93,3 @@ export default function EmployeeCancelModal({
     </div>
   );
 }
-function setFlash(arg0: { message: string; type: string }) {
-  throw new Error("Function not implemented.");
-}

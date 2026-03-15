@@ -1,8 +1,7 @@
 "use client";
 
 import { useEffect } from "react";
-import { toast, ToastContainer } from "react-toastify";
-import { notify } from "../utils/notify";
+import { showErrorAlert } from "../components/utils/showAlert";
 
 export default function AuthLayout({
   children,
@@ -12,8 +11,7 @@ export default function AuthLayout({
   useEffect(() => {
     const match = document.cookie.match(/flashMessage=([^;]+)/);
     if (match) {
-      notify.info(decodeURIComponent(match[1]));
-      document.cookie = "flashMessage=; max-age=0";
+      showErrorAlert(decodeURIComponent(match[1]));
     }
   }, []);
 
@@ -25,12 +23,6 @@ export default function AuthLayout({
       <div className="relative z-10 w-full max-w-md bg-white rounded-2xl shadow-[0_20px_40px_rgba(0,0,0,0.12)] p-8">
         {children}
       </div>
-
-      <ToastContainer
-        position="top-right"
-        autoClose={3000}
-        hideProgressBar={false}
-      />
     </div>
   );
 }

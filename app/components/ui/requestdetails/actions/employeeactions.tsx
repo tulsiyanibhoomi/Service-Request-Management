@@ -4,6 +4,7 @@ import { useState } from "react";
 import { ServiceRequest } from "@/app/types/requests";
 import { useRouter } from "next/navigation";
 import EmployeeCancelModal from "../modals/employeedecisionmodal";
+import { encodeId } from "@/app/components/utils/url";
 
 export default function EmployeeActions({ data }: { data: ServiceRequest }) {
   const router = useRouter();
@@ -28,7 +29,9 @@ export default function EmployeeActions({ data }: { data: ServiceRequest }) {
   }
 
   const handleModify = () => {
-    router.push(`/employee/requests/new?requestId=${data.service_request_id}`);
+    router.push(
+      `/employee/requests/new?requestId=${encodeId(data.service_request_id)}`,
+    );
   };
 
   const handleCancel = () => {

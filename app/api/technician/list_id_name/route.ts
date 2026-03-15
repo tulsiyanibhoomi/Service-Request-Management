@@ -1,16 +1,17 @@
+import { decodeId } from "@/app/components/utils/url";
 import { getCurrentUser } from "@/app/lib/auth";
 import { prisma } from "@/app/lib/prisma";
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 
-export async function GET() {
+export async function GET(req: NextRequest) {
   try {
-    const user = await getCurrentUser();
-
-    const HOD_ID = user.id;
+    const { searchParams } = new URL(req.url);
+    const deptId = searchParams.get("deptId");
+    const decodedId = decodeId(deptId!);
 
     const hodDept = await prisma.service_dept_person.findFirst({
       where: {
-        userid: HOD_ID,
+        service_dept_id: Number(decodedId),
         is_hod: true,
       },
       select: {
