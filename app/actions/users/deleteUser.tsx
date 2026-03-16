@@ -1,11 +1,12 @@
 "use server";
 
 import { prisma } from "@/app/lib/prisma";
+import { Prisma } from "@prisma/client";
 import { revalidatePath } from "next/cache";
 
 export default async function deleteUser(userid: number) {
   try {
-    await prisma.$transaction(async (tx) => {
+    await prisma.$transaction(async (tx: Prisma.TransactionClient) => {
       await tx.user_role.deleteMany({ where: { userid } });
       const hasDeptPerson = await tx.service_dept_person.findFirst({
         where: { userid },

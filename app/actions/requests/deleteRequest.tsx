@@ -1,11 +1,12 @@
 "use server";
 
 import { prisma } from "@/app/lib/prisma";
+import { Prisma } from "@prisma/client";
 import { revalidatePath } from "next/cache";
 
 export default async function deleteRequest(service_request_id: number) {
   try {
-    await prisma.$transaction(async (tx) => {
+    await prisma.$transaction(async (tx: Prisma.TransactionClient) => {
       await tx.service_request_reply.deleteMany({
         where: { service_request_id },
       });

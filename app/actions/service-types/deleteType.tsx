@@ -1,6 +1,7 @@
 "use server";
 
 import { prisma } from "@/app/lib/prisma";
+import { Prisma } from "@prisma/client";
 import { revalidatePath } from "next/cache";
 
 export default async function deleteServiceType(
@@ -8,7 +9,7 @@ export default async function deleteServiceType(
   dept_id: number,
 ) {
   try {
-    await prisma.$transaction(async (tx) => {
+    await prisma.$transaction(async (tx: Prisma.TransactionClient) => {
       const linked_requests = await tx.service_request.count({
         where: { service_request_type_id: service_type_id },
       });

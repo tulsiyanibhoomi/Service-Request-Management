@@ -1,6 +1,7 @@
 "use server";
 
 import { prisma } from "@/app/lib/prisma";
+import { Prisma } from "@prisma/client";
 import { revalidatePath } from "next/cache";
 
 interface CompleteRequestInput {
@@ -34,7 +35,7 @@ export async function completeServiceRequest({
 
     if (!technician) return { type: "error", message: "Something went wrong" };
 
-    await prisma.$transaction(async (tx) => {
+    await prisma.$transaction(async (tx: Prisma.TransactionClient) => {
       await tx.service_request.update({
         where: { service_request_id: requestId },
         data: {

@@ -5,6 +5,7 @@ import bcrypt from "bcryptjs";
 import { revalidatePath } from "next/cache";
 import addTechnician from "../technician/addTechnician";
 import addDeptPerson from "../dept-person/addDeptPerson";
+import { Prisma } from "@prisma/client";
 
 interface AddUserData {
   username: string;
@@ -44,7 +45,7 @@ export default async function addUser({
 
     const hashedPassword = await bcrypt.hash(defaultPassword!, 10);
 
-    await prisma.$transaction(async (tx) => {
+    await prisma.$transaction(async (tx: Prisma.TransactionClient) => {
       const createdUser = await tx.users.create({
         data: {
           username,

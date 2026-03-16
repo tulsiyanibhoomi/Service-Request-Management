@@ -1,11 +1,12 @@
 "use server";
 
 import { prisma } from "@/app/lib/prisma";
+import { Prisma } from "@prisma/client";
 import { revalidatePath } from "next/cache";
 
 export default async function deleteDepartment(service_dept_id: number) {
   try {
-    await prisma.$transaction(async (tx) => {
+    await prisma.$transaction(async (tx: Prisma.TransactionClient) => {
       const linked_dept_person = await tx.service_dept_person.count({
         where: { service_dept_id },
       });
@@ -15,7 +16,7 @@ export default async function deleteDepartment(service_dept_id: number) {
         select: { service_type_id: true },
       });
 
-      const serviceTypeIds = serviceTypes.map((st) => st.service_type_id);
+      const serviceTypeIds = serviceTypes.map((st: any) => st.service_type_id);
 
       const linked_requests = serviceTypeIds.length
         ? await tx.service_request.count({

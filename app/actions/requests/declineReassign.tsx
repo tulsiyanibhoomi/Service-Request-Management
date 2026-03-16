@@ -1,6 +1,7 @@
 "use server";
 
 import { prisma } from "@/app/lib/prisma";
+import { Prisma } from "@prisma/client";
 import { revalidatePath } from "next/cache";
 
 interface DeclineReassignmentInput {
@@ -26,7 +27,7 @@ export async function declineReassignment({
 
     const now = new Date();
 
-    await prisma.$transaction(async (tx) => {
+    await prisma.$transaction(async (tx: Prisma.TransactionClient) => {
       await tx.service_request.update({
         where: { service_request_id: requestId },
         data: {

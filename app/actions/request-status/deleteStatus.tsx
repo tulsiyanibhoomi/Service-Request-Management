@@ -1,6 +1,7 @@
 "use server";
 
 import { prisma } from "@/app/lib/prisma";
+import { Prisma } from "@prisma/client";
 import { revalidatePath } from "next/cache";
 export default async function deleteRequestStatus(
   service_request_status_id: number,
@@ -13,7 +14,7 @@ export default async function deleteRequestStatus(
       return { type: "error", message: "No fallback status available" };
     if (fallbackStatus.service_request_status_id === service_request_status_id)
       return { type: "error", message: "Fallback Status cannot be deleted" };
-    await prisma.$transaction(async (tx) => {
+    await prisma.$transaction(async (tx: Prisma.TransactionClient) => {
       await tx.service_request.updateMany({
         where: { service_request_status_id },
         data: {

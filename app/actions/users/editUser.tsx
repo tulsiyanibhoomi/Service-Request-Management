@@ -7,6 +7,7 @@ import editTechnician from "../technician/editTechnician";
 import addDeptPerson from "../dept-person/addDeptPerson";
 import editDeptPerson from "../dept-person/editDeptPerson";
 import { decodeId } from "@/app/components/utils/url";
+import { Prisma } from "@prisma/client";
 
 interface EditUserData {
   userid: string;
@@ -30,78 +31,80 @@ export default async function editUser({
 }: EditUserData) {
   try {
     const decodedId = decodeId(userid);
-    const result = await prisma.$transaction(async (tx) => {
-      const existingUser = await tx.users.findFirst({
-        where: {
-          OR: [{ username }, { email }],
-          NOT: { userid: { equals: Number(decodedId) } },
-        },
-      });
-      if (existingUser) {
-        return { type: "error", message: "Username or Email already exists" };
-      }
+    const result = await prisma.$transaction(
+      async (tx: Prisma.TransactionClient) => {
+        const existingUser = await tx.users.findFirst({
+          where: {
+            OR: [{ username }, { email }],
+            NOT: { userid: { equals: Number(decodedId) } },
+          },
+        });
+        if (existingUser) {
+          return { type: "error", message: "Username or Email already exists" };
+        }
 
-      const dataToUpdate: any = {
-        username,
-        fullname: fullName,
-        email,
-        isactive: true,
-      };
+        const dataToUpdate: any = {
+          username,
+          fullname: fullName,
+          email,
+          isactive: true,
+        };
 
-      await tx.users.update({
-        where: { userid: Number(decodedId) },
-        data: dataToUpdate,
-      });
-
-      await tx.user_role.deleteMany({ where: { userid: Number(decodedId) } });
-
-      const roleRecord = await tx.role.findUnique({
-        where: { rolename: role },
-      });
-      if (!roleRecord) return { type: "error", message: "Role not found" };
-
-      await tx.user_role.create({
-        data: {
-          userid: Number(decodedId),
-          roleid: roleRecord.roleid,
-        },
-      });
-
-      if (role.toLowerCase() === "technician") {
-        const existingTech = await tx.technician.findUnique({
-          where: { technician_id: Number(decodedId) },
+        await tx.users.update({
+          where: { userid: Number(decodedId) },
+          data: dataToUpdate,
         });
 
-        if (existingTech) {
-          await editTechnician({
+        await tx.user_role.deleteMany({ where: { userid: Number(decodedId) } });
+
+        const roleRecord = await tx.role.findUnique({
+          where: { rolename: role },
+        });
+        if (!roleRecord) return { type: "error", message: "Role not found" };
+
+        await tx.user_role.create({
+          data: {
             userid: Number(decodedId),
-            tx,
-            maxRequestsAllowed: maxRequestsAllowed ?? 10,
-            serviceDeptId: serviceDeptId ?? 1,
+            roleid: roleRecord.roleid,
+          },
+        });
+
+        if (role.toLowerCase() === "technician") {
+          const existingTech = await tx.technician.findUnique({
+            where: { technician_id: Number(decodedId) },
           });
-          await editDeptPerson({
-            userid: Number(decodedId),
-            tx,
-            serviceDeptId: serviceDeptId ?? 1,
-            isHod: false,
-          });
-        } else {
-          await addTechnician({
-            userid: Number(decodedId),
-            tx,
-            maxRequestsAllowed: maxRequestsAllowed ?? 10,
-            serviceDeptId: serviceDeptId ?? 1,
-          });
-          await addDeptPerson({
-            userid: Number(decodedId),
-            tx,
-            serviceDeptId: serviceDeptId ?? 1,
-            fromDate: new Date(),
-            isHod: false,
-          });
+
+          if (existingTech) {
+            await editTechnician({
+              userid: Number(decodedId),
+              tx,
+              maxRequestsAllowed: maxRequestsAllowed ?? 10,
+              serviceDeptId: serviceDeptId ?? 1,
+            });
+            await editDeptPerson({
+              userid: Number(decodedId),
+              tx,
+              serviceDeptId: serviceDeptId ?? 1,
+              isHod: false,
+            });
+          } else {
+            await addTechnician({
+              userid: Number(decodedId),
+              tx,
+              maxRequestsAllowed: maxRequestsAllowed ?? 10,
+              serviceDeptId: serviceDeptId ?? 1,
+            });
+            await addDeptPerson({
+              userid: Number(decodedId),
+              tx,
+              serviceDeptId: serviceDeptId ?? 1,
+              fromDate: new Date(),
+              isHod: false,
+            });
+          }
         }
-      }
-    });
+      },
+    );
 
     revalidatePath("/admin/users");
     return { type: "success", message: "User updated successfully" };

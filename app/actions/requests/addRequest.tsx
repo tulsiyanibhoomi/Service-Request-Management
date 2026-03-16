@@ -4,6 +4,7 @@ import { prisma } from "@/app/lib/prisma";
 import { revalidatePath } from "next/cache";
 import { getCurrentUser } from "@/app/lib/auth";
 import { cookies } from "next/headers";
+import { Prisma } from "@prisma/client";
 
 export default async function addRequest(formData: FormData) {
   const cookieStore = await cookies();
@@ -40,7 +41,7 @@ export default async function addRequest(formData: FormData) {
       formData.get("existingFiles") as string,
     ) as string[];
 
-    await prisma.$transaction(async (tx) => {
+    await prisma.$transaction(async (tx: Prisma.TransactionClient) => {
       const newRequest = await tx.service_request.create({
         data: {
           service_request_no: serviceRequestNo,
