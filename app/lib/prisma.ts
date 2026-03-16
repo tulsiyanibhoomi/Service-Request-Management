@@ -1,6 +1,5 @@
 import { PrismaMariaDb } from "@prisma/adapter-mariadb";
 import { PrismaClient } from "@/app/generated/prisma/client";
-// import { PrismaClient } from "@/app/generated/prisma";
 
 const adapter = new PrismaMariaDb({
   host: process.env.DB_HOST,
@@ -11,5 +10,10 @@ const adapter = new PrismaMariaDb({
   connectionLimit: 5,
 });
 
-const prisma = new PrismaClient({ adapter });
-export { prisma };
+declare global {
+  var prisma: PrismaClient | undefined;
+}
+
+export const prisma = global.prisma || new PrismaClient({ adapter });
+
+if (process.env.NODE_ENV !== "production") global.prisma = prisma;
