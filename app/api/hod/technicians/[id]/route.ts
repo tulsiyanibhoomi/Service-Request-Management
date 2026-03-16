@@ -46,11 +46,11 @@ export async function GET(
     });
 
     const activeStatusIds = activeStatuses.map(
-      (s) => s.service_request_status_id,
+      (s: any) => s.service_request_status_id,
     );
 
     const data = await Promise.all(
-      technicians.map(async (tech) => {
+      technicians.map(async (tech: any) => {
         const assignedRequestsCount = await prisma.service_request.count({
           where: {
             assigned_to_technician_id: tech.technician_id,

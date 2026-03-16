@@ -59,7 +59,7 @@ export async function GET() {
       },
     });
 
-    const approvedNotifications = approvedRequests.map((req) => {
+    const approvedNotifications = approvedRequests.map((req: any) => {
       let message = `Request: ${req.service_request_title} is assigned to you.`;
       if (req.service_request_datetime) {
         const formattedDate = new Date(
@@ -74,7 +74,7 @@ export async function GET() {
       };
     });
 
-    const reassignmentNotifications = reassignmentRequests.map((req) => {
+    const reassignmentNotifications = reassignmentRequests.map((req: any) => {
       let message = `You have requested reassignment for ${req.service_request_title}.`;
       if (req.service_request_datetime) {
         const formattedDate = new Date(
@@ -93,13 +93,13 @@ export async function GET() {
     });
 
     const existingIds = new Set([
-      ...approvedNotifications.map((n) => n.id),
-      ...reassignmentNotifications.map((n) => n.id),
+      ...approvedNotifications.map((n: any) => n.id),
+      ...reassignmentNotifications.map((n: any) => n.id),
     ]);
 
     const deadlineNotifications = deadlineRequests
-      .filter((req) => !existingIds.has(req.service_request_id))
-      .map((req) => {
+      .filter((req: any) => !existingIds.has(req.service_request_id))
+      .map((req: any) => {
         const formattedDate = new Date(
           req.service_request_datetime!,
         ).toLocaleString();

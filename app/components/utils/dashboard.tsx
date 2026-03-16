@@ -62,7 +62,7 @@ export default function CommonDashboard<T>({
 
   const cards = allCards
     .filter((card) => overview[card.key as keyof Overview] !== undefined)
-    .map((card) => ({
+    .map((card: any) => ({
       ...card,
       value: overview[card.key as keyof Overview] as number,
     }));
@@ -78,7 +78,7 @@ export default function CommonDashboard<T>({
       <h1 className="text-3xl font-bold mb-6">{title}</h1>
 
       <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
-        {cards.map((card) => (
+        {cards.map((card: any) => (
           <div
             key={card.title}
             className={`${card.color ?? "bg-gray-200 text-black"} p-5 rounded-xl shadow`}

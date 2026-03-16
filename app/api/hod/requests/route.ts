@@ -57,7 +57,7 @@ export async function GET() {
       },
     });
 
-    const formatted = requests.map((req) => {
+    const formatted = requests.map((req: any) => {
       const status = req.service_request_status.service_request_status_name;
 
       const shouldShowTechnician =

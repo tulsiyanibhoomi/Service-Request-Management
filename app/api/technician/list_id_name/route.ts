@@ -47,11 +47,11 @@ export async function GET(req: NextRequest) {
 
     const data = technicians
       .sort(
-        (a, b) =>
+        (a: any, b: any) =>
           statusOrder[a.availability_status] -
           statusOrder[b.availability_status],
       )
-      .map((t) => ({
+      .map((t: any) => ({
         id: t.technician_id,
         name: t.users.fullname,
         status: t.availability_status,

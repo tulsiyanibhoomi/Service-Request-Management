@@ -60,14 +60,14 @@ export async function GET() {
       },
     });
 
-    const pendingNotifications = pendingRequests.map((req) => ({
+    const pendingNotifications = pendingRequests.map((req: any) => ({
       id: req.service_request_id,
       message: `Request: ${req.service_request_title} is pending to be reviewed.`,
       timestamp: req.service_request_datetime?.toISOString() || undefined,
       link: `/hod/requests/${encodeId(req.service_request_id)}`,
     }));
 
-    const reassignmentNotifications = reassignmentRequests.map((req) => {
+    const reassignmentNotifications = reassignmentRequests.map((req: any) => {
       const technicianName = req.technician?.users?.fullname || "A technician";
       let message = `${technicianName} has requested reassignment for ${req.service_request_title} request.`;
 
@@ -90,13 +90,13 @@ export async function GET() {
     });
 
     const existingIds = new Set([
-      ...pendingNotifications.map((n) => n.id),
-      ...reassignmentNotifications.map((n) => n.id),
+      ...pendingNotifications.map((n: any) => n.id),
+      ...reassignmentNotifications.map((n: any) => n.id),
     ]);
 
     const deadlineNotifications = deadlineRequests
-      .filter((req) => !existingIds.has(req.service_request_id))
-      .map((req) => {
+      .filter((req: any) => !existingIds.has(req.service_request_id))
+      .map((req: any) => {
         const formattedDate = new Date(
           req.service_request_datetime!,
         ).toLocaleString();

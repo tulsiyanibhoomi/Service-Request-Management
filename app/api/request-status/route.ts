@@ -11,7 +11,7 @@ export async function GET() {
       },
     });
 
-    const data = status.map((r) => ({
+    const data = status.map((r: any) => ({
       id: r.service_request_status_id,
       status_name: r.service_request_status_name,
       description: r.description,

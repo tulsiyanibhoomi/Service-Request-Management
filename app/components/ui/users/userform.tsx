@@ -165,7 +165,7 @@ export default function UserForm({
           <SelectInput
             label="Role"
             value={user.role}
-            options={roles.map((r) => ({
+            options={roles.map((r: any) => ({
               value: r.rolename,
               label: r.rolename,
             }))}

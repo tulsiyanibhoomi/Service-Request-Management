@@ -54,7 +54,7 @@ export default function RoleFields({
               }`}
             >
               <option value="">Select Department</option>
-              {departments.map((d) => (
+              {departments.map((d: any) => (
                 <option key={d.id} value={d.id}>
                   {d.name}
                 </option>

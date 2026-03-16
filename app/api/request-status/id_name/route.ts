@@ -5,7 +5,7 @@ export async function GET() {
   try {
     const status = await prisma.service_request_status.findMany();
 
-    const data = status.map((r) => ({
+    const data = status.map((r: any) => ({
       id: r.service_request_status_id,
       name: r.service_request_status_name,
     }));

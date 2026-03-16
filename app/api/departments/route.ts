@@ -24,7 +24,7 @@ export async function GET() {
       },
     });
 
-    const formattedDepartments = departments.map((dept) => ({
+    const formattedDepartments = departments.map((dept: any) => ({
       id: dept.service_dept_id,
       name: dept.service_dept_name,
       description: dept.description,

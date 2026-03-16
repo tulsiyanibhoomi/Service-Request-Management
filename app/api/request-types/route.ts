@@ -18,7 +18,7 @@ export async function GET(request: Request) {
       },
     });
 
-    const data = types.map((t) => ({
+    const data = types.map((t: any) => ({
       id: t.service_type_id,
       name: t.service_type_name,
     }));

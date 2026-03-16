@@ -34,7 +34,7 @@ export async function GET(
       return NextResponse.json({ message: "User not found" }, { status: 404 });
     }
 
-    const roles = user.user_role.map((ur) => ur.role.rolename);
+    const roles = user.user_role.map((ur: any) => ur.role.rolename);
 
     let statistics: any = {};
 
@@ -179,7 +179,7 @@ export async function GET(
     }
 
     const hodDept = Array.isArray(user.service_dept_person)
-      ? user.service_dept_person.find((d) => d.is_hod)
+      ? user.service_dept_person.find((d: any) => d.is_hod)
       : user.service_dept_person?.is_hod
         ? user.service_dept_person
         : undefined;

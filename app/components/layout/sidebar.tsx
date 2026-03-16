@@ -25,7 +25,7 @@ export default function Sidebar({ role }: SidebarProps) {
   return (
     <aside className="w-64 bg-white h-full flex flex-col">
       <nav className="flex-1 overflow-auto mt-4">
-        {menuItems.map((item, idx) => (
+        {menuItems.map((item: any, idx: any) => (
           <div key={item.name} className="flex flex-col">
             {item.subItems ? (
               <>
@@ -48,7 +48,7 @@ export default function Sidebar({ role }: SidebarProps) {
 
                 {openMenus.includes(item.name) && (
                   <div className="ml-8 mt-1 flex flex-col border-l border-gray-200 pl-3">
-                    {item.subItems.map((sub, subIdx) => (
+                    {item.subItems.map((sub: any, subIdx: any) => (
                       <Link
                         key={sub.name}
                         href={sub.path!}

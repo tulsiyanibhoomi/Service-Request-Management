@@ -68,7 +68,7 @@ export async function GET(
       request.attachment_path5,
     ].filter(Boolean);
 
-    const formattedHistory = statusHistory.map((h) => ({
+    const formattedHistory = statusHistory.map((h: any) => ({
       id: h.id.toString(),
       status_id: h.status_id,
       status: h.service_request_status?.service_request_status_name ?? "N/A",

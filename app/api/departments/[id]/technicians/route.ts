@@ -20,7 +20,7 @@ export async function GET(
       },
     });
 
-    const data = technicians.map((t) => ({
+    const data = technicians.map((t: any) => ({
       id: t.technician_id,
       name: t.users?.fullname ?? "N/A",
       email: t.users?.email ?? "N/A",

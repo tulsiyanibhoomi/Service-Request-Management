@@ -50,7 +50,7 @@ export async function GET(
   const formatted = {
     ...dept,
     hodName: dept.service_dept_person[0]?.users.fullname ?? null,
-    service_types: dept.service_type.map((st) => ({
+    service_types: dept.service_type.map((st: any) => ({
       id: st.service_type_id,
       name: st.service_type_name,
       description: st.description,

@@ -49,7 +49,7 @@ export async function GET() {
     });
 
     const notifications = employeeRequests
-      .map((req) => {
+      .map((req: any) => {
         const latestHistory = req.service_request_status_history[0];
         const statusName = latestHistory
           ? latestHistory.service_request_status.service_request_status_name
@@ -89,8 +89,8 @@ export async function GET() {
             req.service_request_datetime?.toISOString(),
         };
       })
-      .filter((n) => n !== null); // remove nulls (pending requests)
-    const sortedNotifications = notifications.sort((a, b) => {
+      .filter((n: any) => n !== null);
+    const sortedNotifications = notifications.sort((a: any, b: any) => {
       const timeA = a.timestamp ? new Date(a.timestamp).getTime() : 0;
       const timeB = b.timestamp ? new Date(b.timestamp).getTime() : 0;
       return timeB - timeA;

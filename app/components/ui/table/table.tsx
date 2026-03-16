@@ -184,7 +184,7 @@ export default function Table({
             </div>
 
             <div className="flex flex-wrap items-center gap-4">
-              {columnsToRender.map((col) => {
+              {columnsToRender.map((col: any) => {
                 const lowerCol = col.toLowerCase();
                 if (!FILTER_COLUMNS.includes(lowerCol)) return null;
 
@@ -216,7 +216,7 @@ export default function Table({
                      focus:ring-blue-500 focus:border-blue-500 transition hover:bg-gray-100"
                     >
                       <option value="">All</option>
-                      {(options ?? []).map((opt) => {
+                      {(options ?? []).map((opt: any) => {
                         if (typeof opt === "string") {
                           return (
                             <option key={opt} value={opt}>
@@ -254,7 +254,7 @@ export default function Table({
           <table className="w-full divide-y divide-gray-200">
             <thead className="bg-gray-50">
               <tr>
-                {columnsToRender.map((col) => {
+                {columnsToRender.map((col: any) => {
                   const isCentered = CENTERED_COLUMNS.includes(
                     col.toLowerCase(),
                   );
@@ -269,7 +269,7 @@ export default function Table({
                     </th>
                   );
                 })}
-                {rowActions?.map((action) => (
+                {rowActions?.map((action: any) => (
                   <th
                     key={action.name}
                     className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase"
@@ -292,7 +292,7 @@ export default function Table({
 
             <tbody className="bg-white divide-y divide-gray-200">
               {filteredData.length > 0 ? (
-                filteredData.map((row, idx) => (
+                filteredData.map((row: any, idx: any) => (
                   <TableRow
                     key={row[rowKey] ?? idx}
                     row={row}

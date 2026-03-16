@@ -28,7 +28,7 @@ export async function GET() {
       },
     });
 
-    const formatted = requests.map((req) => ({
+    const formatted = requests.map((req: any) => ({
       id: req.service_request_id,
       no: req.service_request_no,
       title: req.service_request_title,

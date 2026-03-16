@@ -20,9 +20,9 @@ export async function GET() {
       },
     });
 
-    const data = users.map((user) => ({
+    const data = users.map((user: any) => ({
       ...user,
-      roles: user.user_role.map((ur) => ur.role.rolename).join(", "),
+      roles: user.user_role.map((ur: any) => ur.role.rolename).join(", "),
     }));
 
     return NextResponse.json(data);

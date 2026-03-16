@@ -90,7 +90,7 @@ export default function NotificationsDropdown({
             </div>
           ) : (
             <ul className="divide-y divide-gray-100">
-              {notifications.map((n) => (
+              {notifications.map((n: any) => (
                 <li
                   key={n.id}
                   className={`p-4 hover:bg-gray-50 transition cursor-pointer flex justify-between items-start bg-blue-50`}

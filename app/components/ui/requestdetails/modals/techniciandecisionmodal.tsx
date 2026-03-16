@@ -83,14 +83,14 @@ export default function TechnicianDecisionModal({
     }
   };
 
-  const titleMap = {
+  const titleMap: any = {
     Start: "Start Work",
     Complete: "Complete Work",
     Reassign: "Request Reassignment",
     Withdraw: "Withdraw Reassignment",
   };
 
-  const buttonMap = {
+  const buttonMap: any = {
     Start: {
       label: "Start Work",
       className: "bg-yellow-600 hover:bg-yellow-700",

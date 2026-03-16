@@ -49,7 +49,7 @@ export default function EmployeeStatistics({ stats }: Props) {
               outerRadius={90}
               label
             >
-              {requestData.map((entry, index) => (
+              {requestData.map((entry: any, index: any) => (
                 <Cell
                   key={`cell-${index}`}
                   fill={COLORS[index % COLORS.length]}

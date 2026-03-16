@@ -75,7 +75,7 @@ export default function ServiceTypes({
             No service types yet
           </div>
         ) : (
-          serviceTypes.map((st) => (
+          serviceTypes.map((st: any) => (
             <div key={st.id} className="relative group">
               <span
                 onClick={() => {

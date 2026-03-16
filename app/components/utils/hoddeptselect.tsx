@@ -42,7 +42,7 @@ export default function HodDeptSelect({
         </ListboxButton>
 
         <ListboxOptions className="w-full bg-white shadow-lg max-h-60 rounded-md py-1 text-base overflow-auto sm:text-sm focus:outline-none z-10 transition duration-100 ease-in data-[leave]:data-[closed]:opacity-0">
-          {departments.map((dept) => (
+          {departments.map((dept: any) => (
             <ListboxOption
               key={dept.id}
               value={dept.id}

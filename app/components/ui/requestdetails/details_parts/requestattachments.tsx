@@ -16,7 +16,7 @@ export default function RequestAttachments({ data }: RequestAttachmentsProps) {
           Attachments
         </h2>
         <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-          {data.attachments?.map((file, index) => (
+          {data.attachments?.map((file: any, index: any) => (
             <img
               key={index}
               src={file}

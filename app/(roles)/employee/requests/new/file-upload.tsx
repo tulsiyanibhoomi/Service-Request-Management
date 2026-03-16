@@ -116,7 +116,7 @@ const FileUploader: React.FC<FileUploaderProps> = ({
 
       {existingFiles.length > 0 && (
         <ul className="mt-2 flex flex-wrap gap-2">
-          {existingFiles.map((url, idx) => (
+          {existingFiles.map((url: any, idx: any) => (
             <li key={`existing-${idx}`} className="relative w-24 h-24">
               <img
                 src={url}
@@ -137,7 +137,7 @@ const FileUploader: React.FC<FileUploaderProps> = ({
 
       {newFiles.length > 0 && (
         <ul className="mt-2 flex flex-wrap gap-2">
-          {newFiles.map((file, idx) => {
+          {newFiles.map((file: any, idx: any) => {
             const url = URL.createObjectURL(file);
             return (
               <li key={`new-${idx}`} className="relative w-24 h-24">

@@ -6,7 +6,7 @@ interface RequestTimeStampsProps {
 }
 
 export default function RequestTimeStamps({ data }: RequestTimeStampsProps) {
-  const timeline = data.status_history.map((h) => ({
+  const timeline = data.status_history.map((h: any) => ({
     label: h.status === "Pending" ? "Submitted At" : h.status + " At",
     date: h.changed_at,
     by: h.changed_by_fullname,
@@ -18,7 +18,7 @@ export default function RequestTimeStamps({ data }: RequestTimeStampsProps) {
       <h2 className="text-2xl font-semibold mb-4 text-gray-800">Timestamps</h2>
 
       {timeline.map(
-        (item, index) =>
+        (item: any, index: any) =>
           item.date && (
             <div
               key={`${item.label}-${index}`}

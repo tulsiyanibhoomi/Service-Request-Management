@@ -47,7 +47,7 @@ export default function TableRow({
         }
       }}
     >
-      {columns.map((col, i) => {
+      {columns.map((col: any, i: any) => {
         const value = row[col];
 
         const isCentered =
@@ -150,7 +150,7 @@ export default function TableRow({
         );
       })}
 
-      {rowActions?.map((action, idx) => (
+      {rowActions?.map((action: any, idx: any) => (
         <td key={idx} className="px-3 py-2">
           {action.render(row)}
         </td>
