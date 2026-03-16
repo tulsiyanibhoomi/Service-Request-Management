@@ -18,7 +18,9 @@ export default function EmployeeRequestDetailsPage() {
 
     const fetchData = async () => {
       try {
-        const res = await fetch(`/api/employee/requests/${id}`);
+        const res = await fetch(`/api/employee/requests/${id}`, {
+          credentials: "include",
+        });
         if (!res.ok) throw new Error(`Failed to fetch: ${res.status}`);
         const json = await res.json();
         setData(json);

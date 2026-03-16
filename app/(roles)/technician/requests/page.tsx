@@ -13,7 +13,9 @@ export default function TechnicianRequests() {
   const [error, setError] = useState<string | null>(null);
 
   async function fetchJson<T>(url: string): Promise<T> {
-    const res = await fetch(url);
+    const res = await fetch(url, {
+      credentials: "include",
+    });
     if (!res.ok) throw new Error(`${url} failed with status ${res.status}`);
     return res.json();
   }

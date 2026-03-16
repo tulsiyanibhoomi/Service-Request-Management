@@ -56,13 +56,6 @@ export async function POST(request: NextRequest) {
   try {
     const { email, password } = await request.json();
 
-    console.log("Login attempt:", { email, password });
-    console.log("Env:", {
-      NODE_ENV: process.env.NODE_ENV,
-      JWT_SECRET: process.env.JWT_SECRET,
-      DATABASE_URL: process.env.DATABASE_URL,
-    });
-
     if (!email || !password) {
       return NextResponse.json(
         { error: "Email or password are required" },
@@ -71,7 +64,6 @@ export async function POST(request: NextRequest) {
     }
 
     const result = await login(email, password);
-    console.log("Login result:", result);
 
     if (!result.success || !result.user) {
       return NextResponse.json(
@@ -98,14 +90,13 @@ export async function POST(request: NextRequest) {
     response.cookies.set("token", token, {
       httpOnly: true,
       secure: process.env.NODE_ENV === "production",
-      sameSite: "lax", // changed to lax for testing cross-domain
+      sameSite: "lax",
       path: "/",
       maxAge: 60 * 60 * 24 * 7,
     });
-
     return response;
   } catch (error) {
-    console.error("sign in error: ", error);
+    console.error("Sign in error: ", error);
     return NextResponse.json(
       { error: "Internal server error" },
       { status: 500 },

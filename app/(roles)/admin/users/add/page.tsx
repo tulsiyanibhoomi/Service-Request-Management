@@ -24,18 +24,24 @@ export default function AddEditUserPage() {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const rolesRes = await fetch("/api/roles");
+        const rolesRes = await fetch("/api/roles", {
+          credentials: "include",
+        });
         const rolesData: Role[] = await rolesRes.json();
         setRoles(rolesData);
 
-        const deptRes = await fetch("/api/departments");
+        const deptRes = await fetch("/api/departments", {
+          credentials: "include",
+        });
         const deptDataRaw = await deptRes.json();
         setDepartments(
           deptDataRaw.map((d: any) => ({ id: d.id, name: d.name })),
         );
 
         if (id) {
-          const userRes = await fetch(`/api/users/${id}`);
+          const userRes = await fetch(`/api/users/${id}`, {
+            credentials: "include",
+          });
           if (!userRes.ok) throw new Error("Failed to fetch user");
           const userData = await userRes.json();
 

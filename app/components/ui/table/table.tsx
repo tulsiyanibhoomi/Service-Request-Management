@@ -80,11 +80,15 @@ export default function Table({
   useEffect(() => {
     async function fetchFilterData() {
       try {
-        const deptRes = await fetch("/api/departments");
+        const deptRes = await fetch("/api/departments", {
+          credentials: "include",
+        });
         const deptData: DepartmentOption[] = await deptRes.json();
         setDepartments(deptData);
 
-        const statusRes = await fetch("/api/request-status/id_name");
+        const statusRes = await fetch("/api/request-status/id_name", {
+          credentials: "include",
+        });
         const statusData: { id: string | number; name: string }[] =
           await statusRes.json();
         setStatuses(statusData);

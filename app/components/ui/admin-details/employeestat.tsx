@@ -14,7 +14,6 @@ type Props = {
 };
 
 export default function EmployeeStatistics({ stats }: Props) {
-  console.log(stats);
   const requestData = [
     { name: "Pending", value: stats.pendingRequests || 0 },
     { name: "Active", value: stats.activeRequests || 0 },

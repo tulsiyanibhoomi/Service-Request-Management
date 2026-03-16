@@ -84,7 +84,7 @@ const NewRequest = () => {
     const cloudName = process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME;
     const res = await fetch(
       `https://api.cloudinary.com/v1_1/${cloudName}/upload`,
-      { method: "POST", body: formData },
+      { method: "POST", body: formData, credentials: "include" },
     );
 
     if (!res.ok) throw new Error("Cloudinary upload failed");
@@ -105,6 +105,7 @@ const NewRequest = () => {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ public_ids: publicIds }),
+          credentials: "include",
         });
         if (!delRes.ok) throw new Error("Failed to delete removed files");
       }

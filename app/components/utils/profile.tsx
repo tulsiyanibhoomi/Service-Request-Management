@@ -30,7 +30,9 @@ export default function UserProfile({ userId }: { userId?: string }) {
       setError(null);
 
       try {
-        const userRes = await fetch("/api/auth/current-user");
+        const userRes = await fetch("/api/auth/current-user", {
+          credentials: "include",
+        });
         if (!userRes.ok) throw new Error("Failed to fetch user data");
 
         const userData = await userRes.json();
@@ -53,6 +55,9 @@ export default function UserProfile({ userId }: { userId?: string }) {
         ) {
           const statsRes = await fetch(
             `/api/users/${encodeId(userData.user.id)}`,
+            {
+              credentials: "include",
+            },
           );
           if (!statsRes.ok) throw new Error("Failed to fetch stats");
 

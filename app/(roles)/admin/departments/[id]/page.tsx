@@ -65,7 +65,9 @@ export default function DepartmentDetailPage() {
     setLoading(true);
     setError(null);
     try {
-      const res = await fetch(`/api/departments/${id}`);
+      const res = await fetch(`/api/departments/${id}`, {
+        credentials: "include",
+      });
       if (!res.ok) throw new Error("Failed to fetch department");
       const data = await res.json();
       setDepartment(data);
@@ -81,7 +83,9 @@ export default function DepartmentDetailPage() {
     setTechLoading(true);
     setTechError(null);
     try {
-      const res = await fetch(`/api/departments/${id}/technicians`);
+      const res = await fetch(`/api/departments/${id}/technicians`, {
+        credentials: "include",
+      });
       if (!res.ok) throw new Error("Failed to fetch technicians");
       const data = await res.json();
       setTechnicians(data);

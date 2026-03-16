@@ -17,7 +17,9 @@ export default function AdminRequestDetailsPage() {
 
     const fetchData = async () => {
       try {
-        const res = await fetch(`/api/admin/requests/${id}`);
+        const res = await fetch(`/api/admin/requests/${id}`, {
+          credentials: "include",
+        });
         const json = await res.json();
         setData(json);
       } catch (err) {

@@ -31,7 +31,9 @@ export default function Users() {
   const router = useRouter();
 
   async function fetchJson<T>(url: string): Promise<T> {
-    const res = await fetch(url);
+    const res = await fetch(url, {
+      credentials: "include",
+    });
     if (!res.ok) throw new Error(`${url} failed with status ${res.status}`);
     return res.json();
   }

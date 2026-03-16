@@ -18,7 +18,9 @@ export default function HODRequestDetailsPage() {
 
     const fetchData = async () => {
       try {
-        const res = await fetch(`/api/hod/requests/${id}`);
+        const res = await fetch(`/api/hod/requests/${id}`, {
+          credentials: "include",
+        });
         if (!res.ok) throw new Error(`Failed to fetch: ${res.status}`);
         const json = await res.json();
         setData(json);

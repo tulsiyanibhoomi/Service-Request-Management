@@ -23,16 +23,22 @@ export const useRequestFormData = () => {
       setError(null);
 
       try {
-        const res = await fetch("/api/auth/current-user");
+        const res = await fetch("/api/auth/current-user", {
+          credentials: "include",
+        });
         if (!res.ok) throw new Error("Failed to fetch current user");
         const { user } = await res.json();
 
-        const typeRes = await fetch("/api/request-types/type-names");
+        const typeRes = await fetch("/api/request-types/type-names", {
+          credentials: "include",
+        });
         if (!typeRes.ok) throw new Error("Failed to fetch request types");
         const types = await typeRes.json();
         setRequestTypes(types);
 
-        const overviewRes = await fetch("/api/employee/overview");
+        const overviewRes = await fetch("/api/employee/overview", {
+          credentials: "include",
+        });
         if (!overviewRes.ok)
           throw new Error("Failed to fetch employee overview");
         const overviewData: EmployeeOverview = await overviewRes.json();
@@ -47,7 +53,9 @@ export const useRequestFormData = () => {
         ).padStart(4, "0")}`;
 
         if (requestId) {
-          const reqRes = await fetch(`/api/employee/requests/${requestId}`);
+          const reqRes = await fetch(`/api/employee/requests/${requestId}`, {
+            credentials: "include",
+          });
           if (!reqRes.ok) throw new Error("Failed to fetch request details");
           const request = await reqRes.json();
 

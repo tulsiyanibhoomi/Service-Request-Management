@@ -61,7 +61,9 @@ export default function HODDecisionModal({
 
   const fetchCurrentUser = async () => {
     try {
-      const res = await fetch("/api/auth/current-user");
+      const res = await fetch("/api/auth/current-user", {
+        credentials: "include",
+      });
       if (!res.ok) throw new Error("Failed to fetch current user");
       const data = await res.json();
       setUserId(data.user?.id ?? null);
@@ -77,6 +79,9 @@ export default function HODDecisionModal({
       setLoadingTechs(true);
       const res = await fetch(
         `/api/technician/list_id_name?deptId=${request.dept_id}`,
+        {
+          credentials: "include",
+        },
       );
       if (!res.ok) throw new Error("Failed to load technicians");
       const data = await res.json();

@@ -17,7 +17,9 @@ export default function EmployeeRequests() {
   useEffect(() => {
     async function fetchRequests() {
       try {
-        const res = await fetch("/api/employee/requests");
+        const res = await fetch("/api/employee/requests", {
+          credentials: "include",
+        });
         if (!res.ok) throw new Error(`Failed to fetch: ${res.status}`);
         const data = await res.json();
         setRequests(data);

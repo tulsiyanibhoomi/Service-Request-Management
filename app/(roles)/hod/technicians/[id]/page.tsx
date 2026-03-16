@@ -55,7 +55,9 @@ export default function UserDetailPage() {
     setLoading(true);
     setError(null);
     try {
-      const res = await fetch(`/api/users/${id}`);
+      const res = await fetch(`/api/users/${id}`, {
+        credentials: "include",
+      });
       if (!res.ok) throw new Error("Failed to fetch user");
       const data = await res.json();
       setUser(data);
