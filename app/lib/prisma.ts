@@ -7,13 +7,13 @@ const adapter = new PrismaMariaDb({
   password: process.env.DB_PASSWORD,
   port: Number(process.env.DB_PORT),
   database: process.env.DB_NAME,
-  connectionLimit: 5,
+  connectionLimit: 1,
 });
 
 declare global {
   var prisma: PrismaClient | undefined;
 }
 
-export const prisma = global.prisma || new PrismaClient({ adapter });
+export const prisma = global.prisma ?? new PrismaClient({ adapter });
 
-if (process.env.NODE_ENV !== "production") global.prisma = prisma;
+global.prisma = prisma;
