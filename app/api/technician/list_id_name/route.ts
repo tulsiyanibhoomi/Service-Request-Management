@@ -7,11 +7,10 @@ export async function GET(req: NextRequest) {
   try {
     const { searchParams } = new URL(req.url);
     const deptId = searchParams.get("deptId");
-    const decodedId = decodeId(deptId!);
 
     const hodDept = await prisma.service_dept_person.findFirst({
       where: {
-        service_dept_id: Number(decodedId),
+        service_dept_id: Number(deptId),
         is_hod: true,
       },
       select: {

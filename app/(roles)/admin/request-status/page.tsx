@@ -11,6 +11,8 @@ import {
   showErrorAlert,
   showPositiveAlert,
 } from "@/app/components/utils/showAlert";
+import SkeletonCard from "@/app/components/utils/skeletoncard";
+import CustomError from "@/app/components/utils/error";
 
 type RequestStatus = {
   id: number;
@@ -25,6 +27,9 @@ export default function Requests() {
     null,
   );
 
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
   const fetchStatus = async () => {
     try {
       const res = await fetch("/api/request-status", {
@@ -32,9 +37,11 @@ export default function Requests() {
       });
       const data = await res.json();
       setStatus(data);
-    } catch (err) {
+    } catch (err: any) {
       console.error(err);
-      toast.error("Failed to fetch status");
+      setError(err.message || "Failed to fetch status");
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -76,6 +83,10 @@ export default function Requests() {
     setEditingStatus(row);
     setModalOpen(true);
   };
+
+  if (loading) return <SkeletonCard />;
+  if (error) return <CustomError message="Could not fetch requests" />;
+  if (!status) return <CustomError message="Data not available" />;
 
   return (
     <div className="p-6 w-full">

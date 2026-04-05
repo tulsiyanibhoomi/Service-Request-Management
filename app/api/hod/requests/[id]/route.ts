@@ -86,6 +86,7 @@ export async function GET(
       description: request.service_request_description,
       type_id: request.service_request_type_id,
       type: request.service_request_type?.service_type_name ?? "N/A",
+      dept_id: request.service_request_type?.dept_id ?? null,
       department:
         request.service_request_type?.service_dept?.service_dept_name ?? "N/A",
       priority: request.priority_level,

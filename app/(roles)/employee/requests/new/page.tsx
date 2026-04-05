@@ -84,7 +84,7 @@ const NewRequest = () => {
     const cloudName = process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME;
     const res = await fetch(
       `https://api.cloudinary.com/v1_1/${cloudName}/upload`,
-      { method: "POST", body: formData, credentials: "include" },
+      { method: "POST", body: formData },
     );
 
     if (!res.ok) throw new Error("Cloudinary upload failed");

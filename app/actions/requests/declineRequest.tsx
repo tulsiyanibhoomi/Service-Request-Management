@@ -32,7 +32,7 @@ export async function declineServiceRequest({
     const now = new Date();
 
     await prisma.$transaction(async (tx: Prisma.TransactionClient) => {
-      await prisma.service_request.update({
+      await tx.service_request.update({
         where: { service_request_id: requestId },
         data: {
           service_request_status_id: declinedStatus.service_request_status_id,

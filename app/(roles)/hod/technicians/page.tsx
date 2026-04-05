@@ -14,6 +14,9 @@ interface Technician {
   email: string;
   roles: string;
   isactive: boolean;
+  max_requests_allowed?: number;
+  currently_assigned?: number;
+  availability_status?: string;
 }
 
 interface CurrentUserResponse {
@@ -26,7 +29,7 @@ interface CurrentUserResponse {
 }
 
 export default function HODTechnicians() {
-  const [technicians, setTechnicians] = useState<Technician[] | null>(null);
+  const [technicians, setTechnicians] = useState<Technician[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [departmentId, setDepartmentId] = useState<number | null>(null);
@@ -54,10 +57,11 @@ export default function HODTechnicians() {
           return;
         }
         setDepartmentId(hodData.departmentId);
+
         const techData = await fetchJson<Technician[]>(
           `/api/hod/technicians/${hodData.departmentId}`,
         );
-        setTechnicians(techData);
+        setTechnicians(techData || []);
       } catch (err: any) {
         console.error(err);
         setError(err.message || "Failed to fetch technicians");
@@ -69,9 +73,6 @@ export default function HODTechnicians() {
   }, []);
 
   if (loading) return <SkeletonCard />;
-  if (error) return <CustomError message={error} />;
-  if (!technicians || technicians.length === 0)
-    return <CustomError message="No technicians found in your department" />;
 
   return (
     <div className="p-6 bg-gray-50 min-h-screen">
@@ -85,9 +86,11 @@ export default function HODTechnicians() {
         </button>
       </div>
 
+      {error && <CustomError message={error} />}
+
       <div className="overflow-x-auto">
         <Table
-          data={technicians}
+          data={technicians.length ? technicians : []}
           columns={[
             "fullname",
             "username",
